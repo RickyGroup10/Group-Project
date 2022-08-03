@@ -5,7 +5,7 @@ email: harropliss@myvuw.ac.nz
 ORCID: 0000-0002-6761-7465
 
 Ricky Loo
-email: ricktloo2012@gmail.com
+email: loorick@myvuw.ac.nz
 ORCID: 0000-0002-4265-1085
 
 Max Tan
