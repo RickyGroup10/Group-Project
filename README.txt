@@ -12,6 +12,6 @@ Max Tan
 email:
 ORCID:
 
-Katrin Watkins
+Katrina Watkins
 email: watkinkatr@myvuw.ac.nz
 ORCID: 0000-0001-6614-2819
