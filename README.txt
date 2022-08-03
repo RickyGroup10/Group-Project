@@ -1,8 +1,8 @@
 GROUP 10 MEMBERS 
 
 Lissa Harrop
-email:
-ORCID:
+email: harropliss@myvuw.ac.nz
+ORCID: 0000-0002-6761-7465
 
 Ricky Loo
 email:
