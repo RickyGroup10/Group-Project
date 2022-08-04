@@ -9,8 +9,8 @@ email: loorick@myvuw.ac.nz
 ORCID: 0000-0002-4265-1085
 
 Max Tan
-email:
-ORCID:
+email: tanmacs@myvuw.ac.nz
+ORCID: 0000-0001-9215-4311
 
 Katrina Watkins
 email: watkinkatr@myvuw.ac.nz
