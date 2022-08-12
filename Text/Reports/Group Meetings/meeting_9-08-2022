@@ -10,20 +10,4 @@ mental health and technology, dating app statistics, river water quality and mor
 -The data set is available on kaggle (https://www.kaggle.com/datasets/jmmvutu/dating-app-lovoo-user-profiles?resource=download).
 The license to use the data set is available at https://creativecommons.org/licenses/by/4.0/
 
-- We decided to use the Lovoo v3 data set as it was something that we found interesting,
-is different from prevoius data sets we have all used and we are interested to see what
-information we can obtain from the data set.
-
-- The Lovoo v3 data set contains approximately 24 categorical variables and 8 numercial variables, 
-as well as some other data such as name, user id, freetext and picture id.
-
-- After a quick look at the data set we note that the gender for all data is female, however
-the gender they are looking for is a mixture of male, female, both or none.
-
-- We are interested to see which gender the females are looking for. Whether their age affects
-which gender they are looking for. Whether there is any correlation between counts_profileVisits
-and counts_kisses and seeing if there are any differences between countries.
-
-- We are sure as we explore the data more we will come up with a lot more questions.
-
 - Next meeting scheduled for 1pm 16/00/22
