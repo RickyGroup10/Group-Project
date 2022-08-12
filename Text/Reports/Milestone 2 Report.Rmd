@@ -1,1 +1,35 @@
+# STAT 394 Group Project 2022
 
+## Milestone 2 for Group 10
+
+Group 10 has decided to use the Dating App User Profiles' stats data set. 
+
+The data set is available on kaggle (https://www.kaggle.com/datasets/jmmvutu/dating-app-lovoo-user-profiles?resource=download).
+The license to use the data set is available at https://creativecommons.org/licenses/by/4.0/.
+
+The downloadable data contains two CSV files 1) lovoo_v3_users_api-results and 2) 
+lovoo_v3_users_instances.
+
+We decided to use the Lovoo v3 data set as it was something that we found interesting,
+is different from previous data sets we have all used and we are interested to see what
+information we can obtain from the data set.
+
+The lovoo_v3_users_api-results data set contains approximately 24 categorical 
+variables and 8 numerical variables, as well as some other data such as name, 
+user id, freetext and picture id.
+
+After a quick look at the data set we note that the gender for all data is female, 
+however the gender they are looking for is a mixture of male, female, both or none.
+
+We are interested to see which gender the females are looking for. Whether their 
+age affects which gender they are looking for. Whether there is any correlation 
+between counts_profileVisits and counts_kisses and seeing if there are any 
+differences between countries.
+
+The lovoo_v3_users_instances data set contains mostly categorical data and a lot
+of this is repeats from the lovoo_v3_users_api-results.
+
+We are sure as we explore the data more we will come up with a lot more questions
+which we hope to be able to answer througout our project.
+
+Group members: Ricky Loo, Max Tan, Katrina Watkins and Lissa Harrop.
