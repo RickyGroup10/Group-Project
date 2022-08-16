@@ -36,7 +36,7 @@ require(reshape2)
 lovoo <- read.csv("C:/Users/L Harrop/OneDrive/Study/STAT_394/Project/Group-Project/Data/CSV/lovoo_v3_users_api-results.csv")
 # Need to set a relative path!
 lovoo <- data.frame(lovoo)
-lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", "counts_kisses", "country", "isVip")]
+lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", "counts_kisses", "distance", "country", "isVip")]
 lovoo
 ```
 ```{r}
