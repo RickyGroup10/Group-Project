@@ -1,0 +1,18 @@
+Meeting 12:30pm 16 August 2022
+
+Ricky, Max and Lissa were present. Apologies from Katrina due to illness.
+
+We discussed our data set and pros and cons of some of the varaiables.
+We decided that we would like to use age, counts_pictures, counts_ProfileVisits, 
+counts_kisses and distance as our five numerical variables. We would like to use
+country and isVip as our categorical variables.
+We will run this past Katrina to check and ask for her input into the data set.
+
+We will then look at dividing the dataset for each of to work on our EDA.
+
+We will set up an Rmd file for each of us so to be able to upload our EDA and then
+compile.
+
+Discussed possibly meeting on Sunday aftenoon to see how everyone is going with
+their EDA. Or at least chatting on the discord or looking a facebook messenger chat
+for more instant messaging.
