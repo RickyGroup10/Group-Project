@@ -1,1 +1,33 @@
++---
+title: "Exploratory Data Analysis"
+author: "Lissa Harrop, Katrina Watkins, Ricky Loo and Max Tan"
+date: "16 August 2022"
+classoption: 12pt
+  
+header-includes:
+  - \usepackage{newpxtext,eulerpx}
+  - \usepackage{bm,bbm}
+  - \usepackage{float}
 
+output: bookdown::pdf_document2
+
+#link-citations: yes
+#bibliography: references.bib
+#citation_package: biblatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(300521444, kind="Mersenne-Twister") #Mixture of all our ID numbers
+require(ggplot2)
+require(ggthemes)
+require(extrafont)
+require(booktabs)
+require(GGally)
+require(ggExtra)
+require(xtable)
+require(moments)
+require(ggcorrplot)
+require(fitdistrplus)
+require(reshape2)
+```
