@@ -31,3 +31,16 @@ require(ggcorrplot)
 require(fitdistrplus)
 require(reshape2)
 ```
+
+```{r, echo=FALSE}
+lovoo <- read.csv("C:/Users/L Harrop/OneDrive/Study/STAT_394/Project/Group-Project/Data/CSV/lovoo_v3_users_api-results.csv")
+# Need to set a relative path!
+lovoo <- data.frame(lovoo)
+lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", "counts_kisses", "country", "isVip")]
+lovoo
+```
+```{r}
+lovoo$country <- as.factor(lovoo$country)
+lovoo$isVip <- as.factor(lovoo$isVip)
+summary(lovoo)
+```
