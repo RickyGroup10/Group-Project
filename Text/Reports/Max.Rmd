@@ -11,8 +11,8 @@ header-includes:
 
 output: bookdown::pdf_document2
 
-link-citations: yes
-bibliography: references.bib
+#link-citations: yes
+#bibliography: references.bib
 #citation_package: biblatex
 ---
 
