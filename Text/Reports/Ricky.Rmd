@@ -45,8 +45,71 @@ lovoo$country <- as.factor(lovoo$country)
 lovoo$isVip <- as.factor(lovoo$isVip)
 summary(lovoo)
 ```
-## Analysis of the factors: 
 
+## Analysis of the factors: country, vip, & distance
+### Creating a dataset of the assigned variables
 ```{r}
-
+new_dataset <- d.dataset[, c("distance", "country", "isVip")]
 ```
+
+### Univariate Analysis
+
+### Country
+```{r}
+barplot(table(new_dataset$country), col = "purple", las = 2, cex.names = 0.75, cex.axis = 0.75, main = "Country", xlab = "Country", ylab = "Count", ylim = c(1, 2000))
+table(new_dataset$country)
+```
+It can be observed that the greatest number of users come from: CH, DE, FR, and IT. 
+
+### Vip
+```{r}
+barplot(table(new_dataset$isVip), col = "purple", main = "Purchased Vip", xlab = "Purchased", ylab = "Count", ylim = c(1, 4000))
+table(new_dataset$isVip)
+```
+
+The majority of users haven't purchased VIP. 
+
+### Distance
+```{r}
+hist(new_dataset$distance, xlab = "Distance", ylab = "Count of Individuals", main = "Histogram of individuals preference of logged distance", col = "red")
+table(new_dataset$distance)
+```
+
+### Logging the skewed data
+```{r}
+new_dataset$distance <- log(new_dataset$distance)
+hist(new_dataset$distance, xlab = "Distance", ylab = "Count of Individuals", main = "Histogram of Individuals preference of logged distance", col = "green")
+```
+
+It can be observed that the data is left skewed. The majority of users, set distances higher than the median. 
+
+# Bivariate
+
+### setting distances of NA to average 
+```{r}
+new_dataset$distance[is.na(new_dataset$distance)] <- 207.23
+cor(new_dataset$distance, new_dataset$counts_kisses)
+```
+
+### Correlation between distance and isVip
+```{r}
+ggplot(new_dataset) +
+  geom_boxplot(aes(x = distance, y = isVip)) + coord_flip()
+```
+
+### Correlation between country and distance
+ggplot(new_dataset) +
+  geom_bar(aes(x = country, fill = isVip))
+
+table(new_dataset$country, new_dataset$isVip)
+
+# Bivariate Analysis
+
+# Correlation between country and VIP
+```{r}
+ggplot(new_dataset) +
+  geom_bar(aes(x = country, fill = isVip))
+```
+
+It can be observed from this graph that CH, DE, FR and IT have the greatest number of users who have purchased VIP status.
+
