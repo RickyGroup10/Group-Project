@@ -17,19 +17,21 @@ output: bookdown::pdf_document2
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 set.seed(300521444, kind="Mersenne-Twister") #Mixture of all our ID numbers
+require(pander)
+require(e1071)
 require(ggplot2)
 require(ggthemes)
-require(extrafont)
-require(booktabs)
-require(GGally)
-require(ggExtra)
-require(xtable)
-require(moments)
 require(ggcorrplot)
+require(GGally)
+require(car)
 require(fitdistrplus)
-require(reshape2)
+require(tidyr)
+require(ggExtra)
+require(mvtnorm)
+require(pastecs)
+require(dplyr)
 ```
 
 ```{r, echo=FALSE}
@@ -43,4 +45,198 @@ lovoo
 lovoo$country <- as.factor(lovoo$country)
 lovoo$isVip <- as.factor(lovoo$isVip)
 summary(lovoo)
+```
+
+
+```{r}
+dating<-loovoo %>% select(counts_pictures, counts_profileVisits, counts_kisses)
+head(dating) # subsetted the info I would be working with 
+```
+
+# Univariate analysis of counts_pictures, counts_profileVisits, and counts_kisses
+
+
+```{r}
+summary<-as.data.frame(apply(dating, 2, summary))
+sd_values <- c(sd(dating[,1]), sd(dating[,2]), sd(dating[,3]))
+var_values <- c(var(dating[,1]), var(dating[,2]), var(dating[,3]))
+skew_values <- c(skewness(dating[,1]), skewness(dating[,2]), skewness(dating[,3]))
+kurt_values<-c(kurtosis(dating[,1]), kurtosis(dating[,2]), kurtosis(dating[,3]))
+summary <- rbind(summary,sd_values,var_values, skew_values,kurt_values)
+rownames(summary)<-c("Minimum", "1st Qu.", "Median", "Mean", "3rd Qu.", "Maximum", "Standard Deviation", "Variance", "Skew", "Kurtosis")
+pander(summary)
+```
+
+## Summary statistics
+
+### Pictures
+Heavy right tail, showing most women have about 4 photos attached to their accounts and the maximum the can choose to have is 30. All values are positive.
+
+### Profile visits
+Slightly more symmetric than the pictures distribution but still has a heavy skew with some extreme values and large range. This variable would benefit from the analysis of distances. All values are positive.
+
+### Kisses
+Another heavy right tail with large range. All values are positive.
+
+## Univariate histograms
+
++ Figure&nbsp;\@ref(fig:histPics) shows the Square-root transformed (for readability) distribution of counts_pictures. As we can see, is it pretty normal to have between 0 & 12 photos as this is where the boxplot spans. It is heavily centered around the lower end of the count.
++ Figure&nbsp;\@ref(fig:histVisits) shows the Square-root transformed distribution of counts_profileVisits. There has been an extreme value (100,000 visits counted) removed as it made the graph unreadable. It is heavily centered around the lower end of the count.
++ Figure&nbsp;\@ref(fig:histKiss) shows the Square-root transformed distribution of counts_kisses.It is heavily centered around the lower end of the count.
+
+```{r histPics, fig.cap="Square-root transformed histogram of counts_pictures"}
+mz <- mean(dating[,1])
+sdz <- sd(dating[,1])
+
+ggplot(dating, aes(x=dating[,1])) +
+  geom_histogram(aes(y=..density..),
+                 col="black", fill="white") +
+  xlab("Observations") +
+  ylab("Histogram, smoothed histogram, and estimated normal density") +
+  ggtitle("Histogram of Count of Pictures")+
+  geom_density(kernel="epanechnikov", size=2, col="purple", alpha=.1) +
+  stat_function(fun = "dnorm", args=list(mean=mz, sd=sdz), 
+                col="red", size=2, alpha=.5) +
+  geom_vline(xintercept = mz, col="red") +
+  geom_boxplot(aes(y=-.02), width=.01, notch = TRUE)+
+  theme_tufte()
+```
+
+```{r histVisits, fig.cap="Square-root transformed histogram of counts_profileVisits"}
+dating_r<-dating[,2]
+dating_removed<-dating_r[dating_r<100000]
+
+mz <- mean(dating_removed)
+sdz <- sd(dating_removed)
+
+dating_removed_df<-as.data.frame(dating_removed)
+
+ggplot(dating_removed_df, aes(x=dating_removed)) +
+  geom_histogram(aes(y=..density..),
+                 col="black", fill="white") +
+  xlab("Observations") +
+  ylab("Histogram, smoothed histogram, and estimated normal density") +
+  ggtitle("Histogram of Count of Profile Visits")+
+  geom_density(kernel="epanechnikov", size=2, col="purple", alpha=.1) +
+  stat_function(fun = "dnorm", args=list(mean=mz, sd=sdz), 
+                col="red", size=2, alpha=.5) +
+  geom_vline(xintercept = mz, col="red") +
+  geom_boxplot(aes(y=-.02), width=.01, notch = TRUE)+
+  theme_tufte() + scale_x_continuous(trans = 'sqrt')
+```
+
+```{r histKiss, fig.cap="Square-root transformed histogram of counts_kisses"}
+mz <- mean(dating[,3])
+sdz <- sd(dating[,3])
+
+ggplot(dating, aes(x=dating[,3])) +
+  geom_histogram(aes(y=..density..),
+                 col="black", fill="white") +
+  xlab("Observations") +
+  ylab("Histogram, smoothed histogram, and estimated normal density") +
+  ggtitle("Histogram of Count of Kisses")+
+  geom_density(kernel="epanechnikov", size=2, col="purple", alpha=.1) +
+  stat_function(fun = "dnorm", args=list(mean=mz, sd=sdz), 
+                col="red", size=2, alpha=.5) +
+  geom_vline(xintercept = mz, col="red") +
+  geom_boxplot(aes(y=-.02), width=.01, notch = TRUE)+
+  theme_tufte()+ scale_x_continuous(trans = 'sqrt')
+```
+
+
+# Bivariate EDA 
+
+## Variance and covariance 
+
+All variables are positively related
+
+```{r}
+pander(round(var(dating), 3))
+```
+
+## Correlation
+
+All variables are positively related, this is what we expect as with more visits there will be more likes and so on. Figure&nbsp;\@ref(fig:corVisCount) shows that there is a correlation of interest between profile visits and kisses. 
+
+```{r}
+pander(cor(dating))
+```
+```{r corVisCount, fig.cap="Correlation plot for counts pictures, profile visits, and kisses visualised"}
+ggcorrplot(cor(dating),
+method = "circle",
+hc.order = TRUE,
+type = "lower"
+)
+```
+
+
+## Mahalanobis distance 
+
+```{r maha, fig.cap="Mahalanobis distince plotted"}
+mu.hat <- colMeans(dating)
+Sigma.hat <- cov(dating)
+dM <- mahalanobis(dating, center=mu.hat, cov=Sigma.hat)
+upper.quantiles <- qchisq(c(.9, .95, .99), df=9)
+density.at.quantiles <- dchisq(x=upper.quantiles, df=9)
+cut.points <- data.frame(upper.quantiles, density.at.quantiles)
+ggplot(data.frame(dM), aes(x=dM)) +
+geom_histogram(aes(y=..density..), bins=nclass.FD(dM),
+fill="white", col="black") +
+geom_rug() +
+stat_function(fun="dchisq", args = list(df=9),
+col="red", size=2, alpha=.7, xlim=c(0,25)) +
+geom_segment(data=cut.points, aes(x=upper.quantiles, xend=upper.quantiles,
+y=rep(0,3), yend=density.at.quantiles),
+col="blue", size=2) +
+xlab("Mahalanobis distances and cut points") +
+ylab("Histogram and density")+ scale_x_continuous(trans = 'sqrt')
+
+```
+
+As we can see there are some very surprising values (108) from the table and Figure&nbsp;\@ref(fig:maha), it could be worth while examining these and possibly removing them as outliers. These might be famous people that receive a lot of attention online or other cases that are not simply a single woman looking for love online. 
+
+```{r}
+dating$dM <- dM
+dating$surprise <- cut(dating$dM,
+breaks= c(0, upper.quantiles, Inf),
+labels=c("Typical", "Somewhat", "Surprising", "Very"))
+table(dating$surprise)
+```
+
+## Pairs scatter plots and distribution of Mahalanobis classification.
+
+Figure&nbsp;\@ref(fig:pairsCount) further shows where the very surprising values are - they are mainly on the fringes of the data. although in the univariate distributions we can see that most very suprising values do make up the lower end of the photos which is what we would assume was normal. 
+There will have to be more discussion around the exclusion of points from the data. 
+
+*The contour plots are giving a warning message, I think due to scale*
+
+```{r pairsCount, fig.cap="Pairs plot of count pictures, profile visits, and kisses",warning = FALSE}
+ggpairs(dating, columns=1:3,
+ggplot2::aes(col=surprise, alpha=.5), upper = list(continuous = "density", combo = "box_no_facet")) +
+ggplot2::scale_color_manual(values=c("lightgray", "green", "blue", "red")) +
+ggplot2::theme(axis.text.x = element_text(angle=90, hjust=1))
+
+```
+
+## Pairs contour plots 
+
+All contour plots (Figure&nbsp;\@ref(fig:contourPFP), Figure&nbsp;\@ref(fig:contourKP), Figure&nbsp;\@ref(fig:contourKPF)) are centered around zero and spread with a positive relationship to each other. 
+
+```{r contourPFP, fig.cap="Contour plot of count profile visits and pictures"}
+ggplot(dating, aes(y=dating[,1], x=dating[,2])) +
+geom_density_2d(col="blue") + xlab("Count of profile visits") + ylab("Count of pictures") + 
+  ggtitle("Contour plot of count profile visits and pictures")
+```
+
+```{r contourKP, fig.cap="Contour plot of count kisses and pictures"}
+ggplot(dating, aes(y=dating[,1], x=dating[,3])) +
+geom_density_2d(col="blue") + xlab("Count of kisses") + ylab("Count of pictures") + 
+  ggtitle("Contour plot of count kisses and pictures")
+```
+
+
+```{r contourKPF, fig.cap="Contour plot of count profile visits and kisses"}
+ggplot(dating, aes(y=dating[,2], x=dating[,3])) +
+geom_density_2d(col="blue") + xlab("Count of kisses") + ylab("Count of profile visits") + 
+  ggtitle("Contour plot of count profile visits and kisses")
 ```
