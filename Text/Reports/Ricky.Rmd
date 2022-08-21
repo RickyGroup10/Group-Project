@@ -39,8 +39,14 @@ lovoo <- data.frame(lovoo)
 lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", "counts_kisses", "distance", "country", "isVip")]
 lovoo
 ```
+
 ```{r}
 lovoo$country <- as.factor(lovoo$country)
 lovoo$isVip <- as.factor(lovoo$isVip)
 summary(lovoo)
+```
+## Analysis of the factors: 
+
+```{r}
+
 ```
