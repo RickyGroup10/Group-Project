@@ -102,7 +102,7 @@ print(xtable(vip_freq, caption="Summary Statistics - isVip", label="vipfreq"), c
             caption.placement="top", type="latex")
 ```
 
-```{r correlationmatrix, fig.cap="Correlation Matrix", echo=FALSE}
+```{r correlationmatrix, fig.cap="Correlation Matrix", echo=FALSE, warning=FALSE}
 ggcorrplot(cor(lovoo[,1:5]),
            method = "circle",
            hc.order = TRUE,
@@ -136,7 +136,7 @@ lovoo <- lovoo[, c("counts_profileVisits", "counts_kisses", "isVip")]
 
 ```{r cormat, fig.cap='Correlation of profile visits and kisses', echo=FALSE}
 cormat <- round(cor(lovoo[, c("counts_profileVisits", "counts_kisses")]),2)
-head(cormat)
+#head(cormat)
 melted_cormat <- melt(cormat)
 ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
   geom_tile()
@@ -162,7 +162,7 @@ lovoo <- subset(lovoo, lovoo$counts_profileVisits > (Q1visits - 1.5*IQRvisits) &
 lovoo <- subset(lovoo, lovoo$counts_kisses > (Q1likes - 1.5*IQRlikes) & lovoo$counts_kisses < (Q3likes + 1.5*IQRlikes))
 ```
 
-```{r scatterplot2, fig.cap='Revised scatterplot of profile visits vs profile likes', scho=FALSE}
+```{r scatterplot2, fig.cap='Revised scatterplot of profile visits vs profile likes', echo=FALSE}
 plot(lovoo$counts_profileVisits, lovoo$counts_kisses, main="How do profile visits affect profile likes?",
    xlab="Profile Visits", ylab="Profile Likes")
 abline(lm(lovoo$counts_kisses ~ lovoo$counts_profileVisits, data = lovoo), col = "red", lwd=2)
@@ -191,13 +191,11 @@ boxplot(lovoo$isVip, lovoo$counts_kisses, names=c("Yes", "No"), main="Profie Lik
 
 # Country, isVip and Distance
 
-Looking at the variables - country, isVIp and distance individually. It can be observed that the greatest number of users come from: Switzerland (CH), Germany (DE), France (FR) and Italy (IT) (figure \@ref(fig:freqcountry). From figure \@ref(fig:purchasedVip) we can see that the majority of users haven't purchased VIP status. It can be observed that the distance data is left skewed. The majority of distance between this user's city/location and the location of the user account that was used to fetch the data is higher than the median (figures \@fig(fig:histdistance) and \@fig(fig:histdistance2)).
+Looking at the variables - country, isVIp and distance individually. It can be observed that the greatest number of users come from: Switzerland (CH), Germany (DE), France (FR) and Italy (IT) (figure \@ref(fig:freqcountry). From figure \@ref(fig:purchasedVip) we can see that the majority of users haven't purchased VIP status. It can be observed that the distance data is left skewed. The majority of distance between this user's city/location and the location of the user account that was used to fetch the data is higher than the median (figures \@ref(fig:histdistance) and \@ref(fig:histdistance2)).
 
-\@ref(fig:boxplotdistvip) - need to comment on this
-\@ref(vipcountry) - need to comment on this
+\@ref(fig:boxplotdistvip) shows that the median of Vip and non-Vip are approximately equal, however the distance of the not a Vip's is much larger than that of the Vip's which is to be expected given that a there is a larger number of non-Vip's compared to Vip's. This can also be seen in \@ref(vipcountry).
 
-\@ref(fig:countcountryvip) - this is showing the overall count 
-It can be observed from this graph that CH, DE, FR and IT have the greatest number of users who have purchased VIP status.
+\@ref(fig:countcountryvip) shows it can be observed from this graph that Switzerland (CH), Germany (DE), France (FR) and Italy (IT) have the greatest number of users who have purchased VIP status.
 
 ```{r, echo=FALSE}
 lovoo <- read.csv("../../Data/CSV/lovoo_v3_users_api-results.csv")
@@ -205,22 +203,32 @@ lovoo <- read.csv("../../Data/CSV/lovoo_v3_users_api-results.csv")
 # Converting data to a data frame
 lovoo <- data.frame(lovoo) 
 
+# Selecting the columns that contain our variables
+lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", "counts_kisses", "distance", "country", "isVip")]
+
+# Replacing the missing values in distance with the mean 207.23
+lovoo$distance[is.na(lovoo$distance)] <- 207.23
+
+# Setting country and isVip to be factors.
+lovoo$country <- as.factor(lovoo$country)
+lovoo$isVip <- as.factor(lovoo$isVip)
+
 new_dataset <- lovoo[, c("distance", "country", "isVip")]
 ```
 
 ```{r freqcountry, fig.cap='Number of users by country', echo=FALSE}
 barplot(table(new_dataset$country), col = "purple", las = 2, cex.names = 0.75, cex.axis = 0.75, main = "Country", xlab = "Country", ylab = "Count", ylim = c(1, 2000))
-table(new_dataset$country)
+#table(new_dataset$country)
 ```
 
 ```{r purchasedVip, fig.cap='Count of whether a user is a VIP (nor not)', echo=FALSE}
 barplot(table(new_dataset$isVip), col = "purple", main = "Purchased Vip", xlab = "Purchased", ylab = "Count", ylim = c(1, 4000))
-table(new_dataset$isVip)
+#table(new_dataset$isVip)
 ```
 
 ```{r histdistance, fig.cap='Histogram of individuals distance', echo=FALSE}
 hist(new_dataset$distance, xlab = "Distance", ylab = "Count of Individuals", main = "Histogram of users distance", col = "red")
-table(new_dataset$distance)
+#table(new_dataset$distance)
 ```
 
 ```{r histdistance2, fig.cap='Histogram of users logged distance', echo=FALSE}
@@ -228,7 +236,7 @@ new_dataset$distance <- log(new_dataset$distance)
 hist(new_dataset$distance, xlab = "Distance", ylab = "Count of Individuals", main = "Histogram of users logged distance", col = "green")
 ```
 
-```{r boxplotdistvip , fig.cap='', echo=FALSE}
+```{r boxplotdistvip, fig.cap='Boxplot of distance and isVip', echo=FALSE, warning=FALSE}
 ggplot(new_dataset) +
   geom_boxplot(aes(x = distance, y = isVip)) + coord_flip()
 ```
@@ -240,7 +248,7 @@ print(xtable(newtab, caption="Summary Statistics - isVip (or not) by country", l
             caption.placement="top", type="latex")
 ```
 
-```{r countcountryvip, fig.cap='Count of users by country, indicating if ', echo=FALSE}
+```{r countcountryvip, fig.cap='Count of users by country and Vip status ', echo=FALSE}
 ggplot(new_dataset) +
   geom_bar(aes(x = country, fill = isVip))
 ```
@@ -279,7 +287,7 @@ dating <-lovoo[,c("counts_pictures", "counts_profileVisits", "counts_kisses")]
 #head(dating) # subsetted the info I would be working with 
 ```
 
-```{r histPics, fig.cap="Square-root transformed histogram of counts_pictures", echo=FALSE}
+```{r histPics, fig.cap="Square-root transformed histogram of counts_pictures", echo=FALSE, warning=FALSE}
 mz <- mean(dating[,1])
 sdz <- sd(dating[,1])
 
@@ -297,7 +305,7 @@ ggplot(dating, aes(x=dating[,1])) +
   theme_tufte()
 ```
 
-```{r histVisits, fig.cap="Square-root transformed histogram of counts_profileVisits", echo=FALSE}
+```{r histVisits, fig.cap="Square-root transformed histogram of counts_profileVisits", echo=FALSE, warning=FALSE}
 dating_r<-dating[,2]
 dating_removed<-dating_r[dating_r<100000]
 
@@ -320,7 +328,7 @@ ggplot(dating_removed_df, aes(x=dating_removed)) +
   theme_tufte() + scale_x_continuous(trans = 'sqrt')
 ```
 
-```{r histKiss, fig.cap="Square-root transformed histogram of counts_kisses", echo=FALSE}
+```{r histKiss, fig.cap="Square-root transformed histogram of counts_kisses", echo=FALSE, warning=FALSE}
 mz <- mean(dating[,3])
 sdz <- sd(dating[,3])
 
@@ -345,7 +353,7 @@ print(xtable(b, caption="Variance matrix", label="varkatrina"), comment=FALSE,
             caption.placement="top", type="latex")
 ```
 
-```{r results = 'asis', echo=FALSE}
+```{r results = 'asis', echo=FALSE, warning=FALSE}
 c <- cor(dating)
 
 print(xtable(c, caption="Correlation matrix", label="corkatrina"), comment=FALSE,
@@ -361,7 +369,7 @@ type = "lower"
 
 
 
-```{r maha, fig.cap="Mahalanobis distince plotted", echo=FALSE}
+```{r maha, fig.cap="Mahalanobis distince plotted", echo=FALSE, warning=FALSE}
 mu.hat <- colMeans(dating)
 Sigma.hat <- cov(dating)
 dM <- mahalanobis(dating, center=mu.hat, cov=Sigma.hat)
@@ -382,7 +390,7 @@ ylab("Histogram and density")+ scale_x_continuous(trans = 'sqrt')
 
 ```
 
-```{r results = 'asis', echo=FALSE}
+```{r results = 'asis', echo=FALSE, warning=FALSE}
 dating$dM <- dM
 dating$surprise <- cut(dating$dM,
 breaks= c(0, upper.quantiles, Inf),
@@ -400,19 +408,19 @@ ggplot2::theme(axis.text.x = element_text(angle=90, hjust=1))
 
 ```
 
-```{r contourPFP, fig.cap="Contour plot of count profile visits and pictures", echo=FALSE}
+```{r contourPFP, fig.cap="Contour plot of count profile visits and pictures", echo=FALSE, warning=FALSE}
 ggplot(dating, aes(y=dating[,1], x=dating[,2])) +
 geom_density_2d(col="blue") + xlab("Count of profile visits") + ylab("Count of pictures") + 
   ggtitle("Contour plot of count profile visits and pictures")
 ```
 
-```{r contourKP, fig.cap="Contour plot of count kisses and pictures", echo=FALSE}
+```{r contourKP, fig.cap="Contour plot of count kisses and pictures", echo=FALSE, warning=FALSE}
 ggplot(dating, aes(y=dating[,1], x=dating[,3])) +
 geom_density_2d(col="blue") + xlab("Count of kisses") + ylab("Count of pictures") + 
   ggtitle("Contour plot of count kisses and pictures")
 ```
 
-```{r contourKPF, fig.cap="Contour plot of count profile visits and kisses", echo=FALSE}
+```{r contourKPF, fig.cap="Contour plot of count profile visits and kisses", echo=FALSE, warning=FALSE}
 ggplot(dating, aes(y=dating[,2], x=dating[,3])) +
 geom_density_2d(col="blue") + xlab("Count of kisses") + ylab("Count of profile visits") + 
   ggtitle("Contour plot of count profile visits and kisses")
@@ -463,14 +471,14 @@ ggplot(lovoo.high.country, aes(x=country)) +
 
 ```{r boxplotdistance, fig.cap='Side by side boxplots of age, country and distance', echo=FALSE}
 ggplot(lovoo.high.country, aes(x=(country), y=distance)) +
-  geom_boxplot(aes(fill=country), notched=TRUE) +
+  geom_boxplot(aes(fill=country), notch=TRUE) +
   ylab(label='Distance') +
   facet_grid(~ age)
 ```
 
 ```{r boxplotdistance2, fig.cap='Side by side boxplots of age, country and distance (log scale)', echo=FALSE}
 ggplot(lovoo.high.country, aes(x=(country), y=distance)) +
-  geom_boxplot(aes(fill=country), notched=TRUE) +
+  geom_boxplot(aes(fill=country), notch=TRUE) +
   scale_y_log10() +
   ylab(label='Distance') +
   facet_grid(~ age)
