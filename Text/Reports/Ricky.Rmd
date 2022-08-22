@@ -1,3 +1,8 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 +---
 title: "Exploratory Data Analysis"
 author: "Lissa Harrop, Katrina Watkins, Ricky Loo and Max Tan"
@@ -30,11 +35,13 @@ require(moments)
 require(ggcorrplot)
 require(fitdistrplus)
 require(reshape2)
+require(farff)
 ```
 
 ```{r, echo=FALSE}
-lovoo <- read.csv("C:/Users/L Harrop/OneDrive/Study/STAT_394/Project/Group-Project/Data/CSV/lovoo_v3_users_api-results.csv")
+#lovoo <- read.csv("C:/Users/L Harrop/OneDrive/Study/STAT_394/Project/Group-Project/Data/CSV/lovoo_v3_users_api-results.csv")
 # Need to set a relative path!
+lovoo <- read.csv("../../Data/CSV/lovoo_v3_users_api-results.csv")
 lovoo <- data.frame(lovoo)
 lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", "counts_kisses", "distance", "country", "isVip")]
 lovoo
