@@ -30,14 +30,13 @@ require(moments)
 require(ggcorrplot)
 require(fitdistrplus)
 require(reshape2)
+require(farff)
+require(pander)
 ```
 
 # Exploratory Data Analysis of our overall data
 
-We (group 10) decided to use the Dating App User Profiles' stats data set. The data set is available on kaggle <<REF>> and the license to use the data ser is available on creativecommons <<REF>>.
-
-(https://www.kaggle.com/datasets/jmmvutu/dating-app-lovoo-user-profiles?resource=download).
-The license to use the data set is available at https://creativecommons.org/licenses/by/4.0/.
+We (group 10) decided to use the Dating App User Profiles' stats data set. The data set is available on kaggle (@Lovoov3) and the license to use the data ser is available on creativecommons (@License).
 
 After some basic exploration of the variables available in the Lovoo v3 data set we decided to explore the variables age, counts_pictures, counts_profileVisits, counts_kisses, distance, country and isVip.
 
@@ -54,6 +53,8 @@ There appears to be strong positive correlation between the number of profiles v
 ```{r, echo=FALSE}
 
 # Reading in the data
+#lovoo <- farff::readFARFF("../../Data/CSV/lovoo_v3_users_api-results.csv")
+#lovoo <- farff::readARFF("../../Data/CSV/lovoo_v3_users_api-results.csv")
 lovoo <- read.csv("C:/Users/L Harrop/OneDrive/Study/STAT_394/Project/Group-Project/Data/CSV/lovoo_v3_users_api-results.csv")
 # Need to set a relative path!
 
@@ -124,8 +125,384 @@ ggplot(lovoo, aes(x=country)) +
   geom_bar(fill='blue')
 ```
 
+# Counts_profileVisits, counts_kisses and isVip
+
+How does profile visits affect profile likes?
+
+We see that there is a high correlation (0.89) between profile visits and profile likes (figure \@ref(fig:cormat)). We see from figure \@ref(fig:scatterplot) that there is a positive relationship between profile visits and profile likes. We can also see there are several outliers that we should remove as they can be very influential to our data. After removing the outliers from figure \@ref(fig:scatterplot) we see the same positive relationship but the outlieing profiles are gone (figure \@ref(fig:scatterplot2)).
+
+Does having "VIP" mean you get more profile visits and likes?
+
+The distribution of profile visits and profile likes is right skewed and definitely does not follow a normal distribution as seen in figure \@ref(fig:freqvisitlikes). The density graphs (figure \@ref(fig:desnitylikes)) for both profile visits and profile likes is right skewed. This means that for both profile likes and visits, the mean is greater than the median. The mean of the boxplot for profiles with "VIP" is less than the mean of the boxplot for profiles without "VIP", this means on average profiles with "VIP" get less profile visits and likes than profiles without "VIP" as shown in figure \@ref(fig:boxplotvipvisitlikes)
+
+```{r, echo=FALSE}
+lovoo <- lovoo[, c("counts_profileVisits", "counts_kisses", "isVip")]
+```
+
+```{r cormat, fig.cap='Correlation of profile visits and kisses', echo=FALSE}
+cormat <- round(cor(lovoo[, c("counts_profileVisits", "counts_kisses")]),2)
+head(cormat)
+melted_cormat <- melt(cormat)
+ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()
+```
+
+```{r scatterplot, fig.cap='Scatterplot of profile visits vs profile likes', echo=FALSE}
+plot(lovoo$counts_profileVisits, lovoo$counts_kisses, main="How do profile visits affect profile likes?",
+   xlab="Profile Visits", ylab="Profile Likes")
+abline(lm(lovoo$counts_kisses ~ lovoo$counts_profileVisits, data = lovoo), col = "red")
+```
+
+```{r , echo=FALSE}
+Q1visits <- quantile(lovoo$counts_profileVisits, .25)
+Q3visits <- quantile(lovoo$counts_profileVisits, .75)
+
+Q1likes <- quantile(lovoo$counts_kisses, .25)
+Q3likes <- quantile(lovoo$counts_kisses, .75)
+
+IQRvisits <- IQR(lovoo$counts_profileVisits)
+IQRlikes <- IQR(lovoo$counts_kisses)
+
+lovoo <- subset(lovoo, lovoo$counts_profileVisits > (Q1visits - 1.5*IQRvisits) & lovoo$counts_profileVisits < (Q3visits + 1.5*IQRvisits))
+lovoo <- subset(lovoo, lovoo$counts_kisses > (Q1likes - 1.5*IQRlikes) & lovoo$counts_kisses < (Q3likes + 1.5*IQRlikes))
+```
+
+```{r scatterplot2, fig.cap='Revised scatterplot of profile visits vs profile likes', scho=FALSE}
+plot(lovoo$counts_profileVisits, lovoo$counts_kisses, main="How do profile visits affect profile likes?",
+   xlab="Profile Visits", ylab="Profile Likes")
+abline(lm(lovoo$counts_kisses ~ lovoo$counts_profileVisits, data = lovoo), col = "red", lwd=2)
+```
+
+```{r freqvisitlikes, fig.cap='Histograms of Frequency of Profile Visits and Frequency of Profile Likes', echo=FALSE}
+par(mfrow=c(1,2))
+hist(lovoo$counts_profileVisits, main="Distribution of profile visits", xlab="Profile Visits")
+hist(lovoo$counts_kisses, main="Distribution of profile likes", xlab="Profile Likes")
+```
+
+```{r desnitylikes, fig.cap='Density of Profile Likes based on VIP status', echo=FALSE}
+par(mfrow=c(1,2))
+ggplot(lovoo, aes(x=counts_profileVisits, color=isVip)) + 
+  geom_density() + labs(x="Profile Visits") + labs(color="VIP") + scale_color_discrete(labels=c('Yes', 'No'))
+ggplot(lovoo, aes(x=counts_kisses, color=isVip)) + 
+  geom_density() + labs(x="Profile Likes") + labs(color="VIP") + scale_color_discrete(labels=c('Yes', 'No')) + geom_vline(data=lovoo, aes(xintercept=mean(counts_kisses), color=isVip),
+             linetype="dashed")
+```
+
+```{r boxplotvipvisitlikes, fig.cap='side by side boxplots of Profile Visits and Profile Likes against VIP status',  echo=FALSE}
+par(mfrow=c(1,2))
+boxplot(lovoo$isVip, lovoo$counts_profileVisits, names=c("Yes", "No"), main="Profie Visits by profiles with 'VIP'", ylab="Profile Visits")
+boxplot(lovoo$isVip, lovoo$counts_kisses, names=c("Yes", "No"), main="Profie Likes by profiles with 'VIP'", ylab="Profile Likes")
+```
+
+# Country, isVip and Distance
+
+Looking at the variables - country, isVIp and distance individually. It can be observed that the greatest number of users come from: Switzerland (CH), Germany (DE), France (FR) and Italy (IT) (figure \@ref(fig:freqcountry). From figure \@ref(fig:purchasedVip) we can see that the majority of users haven't purchased VIP status. It can be observed that the distance data is left skewed. The majority of distance between this user's city/location and the location of the user account that was used to fetch the data is higher than the median (figures \@fig(fig:histdistance) and \@fig(fig:histdistance2)).
+
+\@ref(fig:boxplotdistvip) - need to comment on this
+\@ref(vipcountry) - need to comment on this
+
+\@ref(fig:countcountryvip) - this is showing the overall count 
+It can be observed from this graph that CH, DE, FR and IT have the greatest number of users who have purchased VIP status.
+
+# UPDATE the path for the data here!!!!!
+
+```{r, echo=FALSE}
+lovoo <- read.csv("C:/Users/L Harrop/OneDrive/Study/STAT_394/Project/Group-Project/Data/CSV/lovoo_v3_users_api-results.csv")
+# Need to set a relative path!
+
+# Converting data to a data frame
+lovoo <- data.frame(lovoo) 
+
+new_dataset <- lovoo[, c("distance", "country", "isVip")]
+```
+
+```{r freqcountry, fig.cap='Number of users by country', echo=FALSE}
+barplot(table(new_dataset$country), col = "purple", las = 2, cex.names = 0.75, cex.axis = 0.75, main = "Country", xlab = "Country", ylab = "Count", ylim = c(1, 2000))
+table(new_dataset$country)
+```
+
+```{r purchasedVip, fig.cap='Count of whether a user is a VIP (nor not)', echo=FALSE}
+barplot(table(new_dataset$isVip), col = "purple", main = "Purchased Vip", xlab = "Purchased", ylab = "Count", ylim = c(1, 4000))
+table(new_dataset$isVip)
+```
+
+```{r histdistance, fig.cap='Histogram of individuals distance', echo=FALSE}
+hist(new_dataset$distance, xlab = "Distance", ylab = "Count of Individuals", main = "Histogram of users distance", col = "red")
+table(new_dataset$distance)
+```
+
+```{r histdistance2, fig.cap='Histogram of users logged distance', echo=FALSE}
+new_dataset$distance <- log(new_dataset$distance)
+hist(new_dataset$distance, xlab = "Distance", ylab = "Count of Individuals", main = "Histogram of users logged distance", col = "green")
+```
+
+```{r boxplotdistvip , fig.cap='', echo=FALSE}
+ggplot(new_dataset) +
+  geom_boxplot(aes(x = distance, y = isVip)) + coord_flip()
+```
+
+```{r results = 'asis', echo=FALSE}
+newtab <- table(new_dataset$country, new_dataset$isVip)
+colnames(newtab) <- c("isVip - No", "isVip - No")
+print(xtable(newtab, caption="Summary Statistics - isVip (or not) by country", label="vipcountry"), comment=FALSE,
+            caption.placement="top", type="latex")
+```
+
+```{r countcountryvip, fig.cap='Count of users by country, indicating if ', echo=FALSE}
+ggplot(new_dataset) +
+  geom_bar(aes(x = country, fill = isVip))
+```
+
+# Counts_pictures, counts_profiles and counts_kisses
+
+From table \@ref(SumStat) we can see that the number of pictures a user profile has, has a heavy right tail, showing most women have about 4 photos attached to their accounts and the maximum the can choose to have is 30. All values are positive. Profile visits is slightly more symmetric than the pictures distribution but still has a heavy skew with some extreme values and large range. This variable would benefit from the analysis of distances. All values are positive. The number of kisses (likes) has a heavy right tail with large range. But all values are positive.
+
+Figure \@ref(fig:histPics) shows the Square-root transformed (for readability) distribution of counts_pictures. As we can see, is it pretty normal to have between 0 & 12 photos as this is where the boxplot spans. It is heavily centered around the lower end of the count.
+Figure \@ref(fig:histVisits) shows the Square-root transformed distribution of counts_profileVisits. There has been an extreme value (100,000 visits counted) removed as it made the graph unreadable. It is heavily centered around the lower end of the count.
+Figure \@ref(fig:histKiss) shows the Square-root transformed distribution of counts_kisses. It is heavily centered around the lower end of the count.
+
+The variance and covariance matrices can be seen in tables (\@ref(varkatrina) and \@ref(corkatrina)). All variables are positively related
+
+All variables are positively correlated, this is what we expect as with more visits there will be more likes and so on. Figure \@ref(fig:corVisCount) shows that there is a correlation of interest between profile visits and kisses. 
+
+Looking at Mahalanobis distance we can see there are some very surprising values (108) from the table and Figure \@ref(fig:maha), it could be worth while examining these and possibly removing them as outliers. These might be famous people that receive a lot of attention online or other cases that are not simply a single woman looking for love online. 
+
+Figure \@ref(fig:pairsCount) further shows where the very surprising values are - they are mainly on the fringes of the data. although in the univariate distributions we can see that most very suprising values do make up the lower end of the photos which is what we would assume was normal. 
+There will have to be more discussion around the exclusion of points from the data. 
+
+*The contour plots are giving a warning message, I think due to scale*
+
+All contour plots (Figure \@ref(fig:contourPFP), Figure \@ref(fig:contourKP), Figure \@ref(fig:contourKPF)) are centered around zero and spread with a positive relationship to each other. 
+
+
+# UPDATE the path for the data here!!!!!
+
+```{r, echo=FALSE}
+lovoo <- read.csv("C:/Users/L Harrop/OneDrive/Study/STAT_394/Project/Group-Project/Data/CSV/lovoo_v3_users_api-results.csv")
+# Need to set a relative path!
+
+# Converting data to a data frame
+lovoo <- data.frame(lovoo)
+```
+
+```{r, echo=FALSE}
+dating <-lovoo[,c("counts_pictures", "counts_profileVisits", "counts_kisses")]
+#head(dating) # subsetted the info I would be working with 
+```
+
+```{r histPics, fig.cap="Square-root transformed histogram of counts_pictures", echo=FALSE}
+mz <- mean(dating[,1])
+sdz <- sd(dating[,1])
+
+ggplot(dating, aes(x=dating[,1])) +
+  geom_histogram(aes(y=..density..),
+                 col="black", fill="white") +
+  xlab("Observations") +
+  ylab("Histogram, smoothed histogram, and estimated normal density") +
+  ggtitle("Histogram of Count of Pictures")+
+  geom_density(kernel="epanechnikov", size=2, col="purple", alpha=.1) +
+  stat_function(fun = "dnorm", args=list(mean=mz, sd=sdz), 
+                col="red", size=2, alpha=.5) +
+  geom_vline(xintercept = mz, col="red") +
+  geom_boxplot(aes(y=-.02), width=.01, notch = TRUE)+
+  theme_tufte()
+```
+
+```{r histVisits, fig.cap="Square-root transformed histogram of counts_profileVisits", echo=FALSE}
+dating_r<-dating[,2]
+dating_removed<-dating_r[dating_r<100000]
+
+mz <- mean(dating_removed)
+sdz <- sd(dating_removed)
+
+dating_removed_df<-as.data.frame(dating_removed)
+
+ggplot(dating_removed_df, aes(x=dating_removed)) +
+  geom_histogram(aes(y=..density..),
+                 col="black", fill="white") +
+  xlab("Observations") +
+  ylab("Histogram, smoothed histogram, and estimated normal density") +
+  ggtitle("Histogram of Count of Profile Visits")+
+  geom_density(kernel="epanechnikov", size=2, col="purple", alpha=.1) +
+  stat_function(fun = "dnorm", args=list(mean=mz, sd=sdz), 
+                col="red", size=2, alpha=.5) +
+  geom_vline(xintercept = mz, col="red") +
+  geom_boxplot(aes(y=-.02), width=.01, notch = TRUE)+
+  theme_tufte() + scale_x_continuous(trans = 'sqrt')
+```
+
+```{r histKiss, fig.cap="Square-root transformed histogram of counts_kisses", echo=FALSE}
+mz <- mean(dating[,3])
+sdz <- sd(dating[,3])
+
+ggplot(dating, aes(x=dating[,3])) +
+  geom_histogram(aes(y=..density..),
+                 col="black", fill="white") +
+  xlab("Observations") +
+  ylab("Histogram, smoothed histogram, and estimated normal density") +
+  ggtitle("Histogram of Count of Kisses")+
+  geom_density(kernel="epanechnikov", size=2, col="purple", alpha=.1) +
+  stat_function(fun = "dnorm", args=list(mean=mz, sd=sdz), 
+                col="red", size=2, alpha=.5) +
+  geom_vline(xintercept = mz, col="red") +
+  geom_boxplot(aes(y=-.02), width=.01, notch = TRUE)+
+  theme_tufte()+ scale_x_continuous(trans = 'sqrt')
+```
+
+```{r results = 'asis', echo=FALSE}
+b <- round(var(dating), 3)
+
+print(xtable(b, caption="Variance matrix", label="varkatrina"), comment=FALSE,
+            caption.placement="top", type="latex")
+```
+
+```{r results = 'asis', echo=FALSE}
+c <- cor(dating)
+
+print(xtable(c, caption="Correlation matrix", label="corkatrina"), comment=FALSE,
+            caption.placement="top", type="latex")
+```
+```{r corVisCount, fig.cap="Correlation plot for counts pictures, profile visits, and kisses visualised", echo=FALSE}
+ggcorrplot(cor(dating),
+method = "circle",
+hc.order = TRUE,
+type = "lower"
+)
+```
+
+
+
+```{r maha, fig.cap="Mahalanobis distince plotted", echo=FALSE}
+mu.hat <- colMeans(dating)
+Sigma.hat <- cov(dating)
+dM <- mahalanobis(dating, center=mu.hat, cov=Sigma.hat)
+upper.quantiles <- qchisq(c(.9, .95, .99), df=9)
+density.at.quantiles <- dchisq(x=upper.quantiles, df=9)
+cut.points <- data.frame(upper.quantiles, density.at.quantiles)
+ggplot(data.frame(dM), aes(x=dM)) +
+geom_histogram(aes(y=..density..), bins=nclass.FD(dM),
+fill="white", col="black") +
+geom_rug() +
+stat_function(fun="dchisq", args = list(df=9),
+col="red", size=2, alpha=.7, xlim=c(0,25)) +
+geom_segment(data=cut.points, aes(x=upper.quantiles, xend=upper.quantiles,
+y=rep(0,3), yend=density.at.quantiles),
+col="blue", size=2) +
+xlab("Mahalanobis distances and cut points") +
+ylab("Histogram and density")+ scale_x_continuous(trans = 'sqrt')
+
+```
+
+
+
+```{r, echo=FALSE}
+dating$dM <- dM
+dating$surprise <- cut(dating$dM,
+breaks= c(0, upper.quantiles, Inf),
+labels=c("Typical", "Somewhat", "Surprising", "Very"))
+d <- table(dating$surprise)
+print(xtable(d, caption="Surprising table", label="surprise"), comment=FALSE,
+            caption.placement="top", type="latex")
+```
+
+```{r pairsCount, fig.cap="Pairs plot of count pictures, profile visits, and kisses",warning = FALSE, echo=FALSE}
+ggpairs(dating, columns=1:3,
+ggplot2::aes(col=surprise, alpha=.5), upper = list(continuous = "density", combo = "box_no_facet")) +
+ggplot2::scale_color_manual(values=c("lightgray", "green", "blue", "red")) +
+ggplot2::theme(axis.text.x = element_text(angle=90, hjust=1))
+
+```
+
+
+
+```{r contourPFP, fig.cap="Contour plot of count profile visits and pictures", echo=FALSE}
+ggplot(dating, aes(y=dating[,1], x=dating[,2])) +
+geom_density_2d(col="blue") + xlab("Count of profile visits") + ylab("Count of pictures") + 
+  ggtitle("Contour plot of count profile visits and pictures")
+```
+
+```{r contourKP, fig.cap="Contour plot of count kisses and pictures", echo=FALSE}
+ggplot(dating, aes(y=dating[,1], x=dating[,3])) +
+geom_density_2d(col="blue") + xlab("Count of kisses") + ylab("Count of pictures") + 
+  ggtitle("Contour plot of count kisses and pictures")
+```
+
+
+```{r contourKPF, fig.cap="Contour plot of count profile visits and kisses", echo=FALSE}
+ggplot(dating, aes(y=dating[,2], x=dating[,3])) +
+geom_density_2d(col="blue") + xlab("Count of kisses") + ylab("Count of profile visits") + 
+  ggtitle("Contour plot of count profile visits and kisses")
+```
+
+# Age, country and number of pictures
+
+Figure \@ref(fig:agecount2) shows the number of users by age. The number of users is heavier in the age range 19-22 (inclusive). It appears that a large number of countries have a very small number of users, while a few countries such as Switzerland, Germany, France and Italy have larger numbers of users. This can be seen in \@ref(fig:freqcountry). Table \@ref(counage) shows us a breakdown of the number of users per country by age. Again this supports higher numbers in Switzerland, Germany, France and Italy. Taking a closer look at the countries - Switzerland, Germany, France and Italy we can look at the number of users per country by age. Figure \@ref(fig:agecount) shows that Switzerland has the larger number of users with ages 19-21 and Germany has the larger number of users for ages 22-24. Looking at the boxplot in figure \@ref(fig:boxplotdistance) we can see that there are a few very large outliers in the data and it is very hard to read the boxplots. By taking the log of the data we can see the median more clearly. Figure \@ref(fig:boxplotdistance2) shows that the medians vary, however there is not much variability within a country across the different ages. 
+
+# Update file path
+
+```{r, echo=FALSE}
+
+# Reading in the data
+#lovoo <- farff::readFARFF("../../Data/CSV/lovoo_v3_users_api-results.csv")
+#lovoo <- farff::readARFF("../../Data/CSV/lovoo_v3_users_api-results.csv")
+lovoo <- read.csv("C:/Users/L Harrop/OneDrive/Study/STAT_394/Project/Group-Project/Data/CSV/lovoo_v3_users_api-results.csv")
+# Need to set a relative path!
+
+# Converting data to a data frame
+lovoo <- data.frame(lovoo) 
+
+# Selecting the columns that contain our variables
+lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", "counts_kisses", "distance", "country", "isVip")]
+
+# Replacing the missing values in distance with the mean 207.23
+lovoo$distance[is.na(lovoo$distance)] <- 207.23
+
+# Setting country and isVip to be factors.
+lovoo$country <- as.factor(lovoo$country)
+lovoo$isVip <- as.factor(lovoo$isVip)
+```
+
+```{r agecount2, fig.cap='Number of users by age' ,echo=FALSE}
+ggplot(lovoo, aes(x=age)) +
+  geom_bar(fill='blue') + 
+  ylab(label='Number of users')
+```
+
+```{r results = 'asis', echo=FALSE}
+coun_age <- table(lovoo$country, lovoo$age)
+print(xtable(coun_age, caption="Country vs age", label="counage"), comment=FALSE,
+            caption.placement="top", type="latex")
+```
+
+```{r agecount, fig.cap='Number of users by age and country' ,echo=FALSE}
+lovoo.high.country <- lovoo[lovoo$country %in% c('CH' , 'DE', 'FR', 'IT'),]
+ggplot(lovoo.high.country, aes(x=country)) +
+  geom_bar(aes(fill=country)) + 
+  ylab(label='Number of users') + 
+  facet_grid(~age)
+```
+
+```{r boxplotdistance, fig.cap='Side by side boxplots of age, country and distance', echo=FALSE}
+ggplot(lovoo.high.country, aes(x=(country), y=distance)) +
+  geom_boxplot(aes(fill=country), notched=TRUE) +
+  ylab(label='Distance') +
+  facet_grid(~ age)
+```
+
+
+```{r boxplotdistance2, fig.cap='Side by side boxplots of age, country and distance (log scale)', echo=FALSE}
+ggplot(lovoo.high.country, aes(x=(country), y=distance)) +
+  geom_boxplot(aes(fill=country), notched=TRUE) +
+  scale_y_log10() +
+  ylab(label='Distance') +
+  facet_grid(~ age)
+```
 
 
 
 
+
+
+
+# References
 

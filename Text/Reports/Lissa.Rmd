@@ -11,14 +11,14 @@ header-includes:
 
 output: bookdown::pdf_document2
 
-#link-citations: yes
+link-citations: yes
 #bibliography: references.bib
 #citation_package: biblatex
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-#set.seed(300140809, kind="Mersenne-Twister")
+set.seed(300521444, kind="Mersenne-Twister") #Mixture of all our ID numbers
 require(ggplot2)
 require(ggthemes)
 require(extrafont)
@@ -32,17 +32,170 @@ require(fitdistrplus)
 require(reshape2)
 ```
 
+# Exploratory Data Analysis of our overall data
+
+We (group 10) decided to use the Dating App User Profiles' stats data set. The data set is available on kaggle <<REF>> and the license to use the data ser is available on creativecommons <<REF>>.
+
+(https://www.kaggle.com/datasets/jmmvutu/dating-app-lovoo-user-profiles?resource=download).
+The license to use the data set is available at https://creativecommons.org/licenses/by/4.0/.
+
+After some basic exploration of the variables available in the Lovoo v3 data set we decided to explore the variables age, counts_pictures, counts_profileVisits, counts_kisses, distance, country and isVip.
+
+**Age** is the users age, **counts_pictures** is the number of pictures on the user's profile, **counts_profileVisits** is the number of clicks on this user (to see his/her full profile) from other user accounts, **counts_kisses** is the number of unique user accounts that "liked" (called "kiss" on the platform) this user account, **distance** is the distance between this user's city/location and the location of the user account that was used to fetch the data of this user, **country** is the user's country, **isVip** is a 1 if the user is VIP. [It was possible to buy a VIP status with real money. This status came with benefits.].
+
+It was discovered that there were 46 missing values in the variable distance. These have been replaced by the mean of the distance column, 207.23.After replacing the 46 missing distance variables to ensure we have a full data set, we have a sample size of 3992 for all seven variables. 
+
+The ages of the user's of the lovoo app range from 18 years to 28 years with the median age being 22 year. The minimum number of pictures on a user's profile is 0 with the maximum being 30 pictures and the median being 4.The number of clicks on a user's profile to see his/her full profile (from another users account) ranges from 0 to 164425 clicks, with the median being 1222 clicks. The number of unique user accounts that "liked" a users account ranges from 0 to 9288 likes, with the median being 44 likes. The distance between this user's city/location and the location of the user account that was used to fetch the data of the user ranges from 0 to 6918, with the median being 173. These and other summary statistics can be seen in table \@ref(SumStat). 
+
+The summary of the countries and their counts can be found in table \@ref(Counfreq) and a visualisation can be seen in figure \@ref(fig:barcountry). There are 32 different countries with varying numbers of users. Table \@ref(vipfreq) shows that 3901 users are not Vip's while only 91 are Vip's.
+
+There appears to be strong positive correlation between the number of profiles visits and the number of likes that a user receives. There is also positive correlation between the number of pictures a user has and the number of profile visits they receive, as well as the number of likes the user has. There is slight positive correlation between the age of the user and the distance between this user's city/location and the location of the user account that was used to fetch the data of the user. There appears to be no correlation between age and likes, profile visits and pictures, nor distance and likes, profile visits and pictures. This can been seen in figure \@ref(fig:correlationmatrix) and supported by the pairs plots in figure \@ref(fig:pairsplot).
+
 ```{r, echo=FALSE}
+
+# Reading in the data
 lovoo <- read.csv("C:/Users/L Harrop/OneDrive/Study/STAT_394/Project/Group-Project/Data/CSV/lovoo_v3_users_api-results.csv")
 # Need to set a relative path!
 
-lovoo <- data.frame(lovoo)
-lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", "counts_kisses", "country", "isVip")]
-lovoo
-```
-```{r}
+# Converting data to a data frame
+lovoo <- data.frame(lovoo) 
+
+# Selecting the columns that contain our variables
+lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", "counts_kisses", "distance", "country", "isVip")]
+
+# Replacing the missing values in distance with the mean 207.23
+lovoo$distance[is.na(lovoo$distance)] <- 207.23
+
+# Setting country and isVip to be factors.
 lovoo$country <- as.factor(lovoo$country)
 lovoo$isVip <- as.factor(lovoo$isVip)
-summary(lovoo)
 ```
+
+```{r, echo=FALSE}
+# creating summary statistics
+MySummary <- function(df){
+  (c(length(df), min(df), quantile(df, .25), median(df), quantile(df, .75),
+     max(df), IQR(df), sd(df), mean(df)))
+}
+```
+
+```{r results = 'asis', echo=FALSE}
+SumStat <- apply(lovoo[,1:5], MySummary, MARGIN=2)
+rownames(SumStat) <- c("sample size", "minimum", "first quartile", "median",
+                       "third quartile", "maximum", "IQR", "standard deviation",
+                       "mean")
+
+print(xtable(SumStat, caption="Summary Statistics - Numerical Variables", label="SumStat"), comment=FALSE,
+            caption.placement="top", type="latex")
+```
+
+```{r results = 'asis', echo=FALSE}
+coun_freq <- table(lovoo$country)
+coun_freq <- data.frame(coun_freq)
+colnames(coun_freq) <- c("Country", "Count")
+print(xtable(coun_freq, caption="Summary Statistics - Countires", label="Counfreq"), comment=FALSE,
+            caption.placement="top", type="latex")
+```
+
+```{r results = 'asis', echo=FALSE}
+vip_freq <- table(lovoo$isVip)
+vip_freq <- data.frame(vip_freq)
+colnames(vip_freq) <- c("isVip", "Count")
+rownames(vip_freq) <- c("No", "Yes")
+print(xtable(vip_freq, caption="Summary Statistics - isVip", label="vipfreq"), comment=FALSE,
+            caption.placement="top", type="latex")
+```
+
+```{r correlationmatrix, fig.cap="Correlation Matrix", echo=FALSE}
+ggcorrplot(cor(lovoo[,1:5]),
+           method = "circle",
+           hc.order = TRUE,
+           type = "lower") +
+  ggtitle("Correlation Matrix") 
+```
+
+```{r pairsplot, fig.cap='Pairs plot', echo=FALSE}
+ggpairs(lovoo[,1:5]) +
+  ggtitle("Pairs plots of age, pictures, profile visits, likes and distance")
+```
+
+```{r barcountry, fig.cap="Number of user's by Country", echo=FALSE}
+ggplot(lovoo, aes(x=country)) +
+  geom_bar(fill='blue')
+```
+
+
+# Age, country and number of pictures
+
+It appears that a large number of countries have a very small number of users, while a few countries such as Switzerland, Germany, France and Italy have larger numbers of users. This can be seen in \@ref(fig:countrycount). Table \@ref(counage) shows us a breakdown of the number of users per country by age. Again this supports higher numbers in Switzerland, Germany, France and Italy.
+
+```{r countrycount, fig.cap='Number of users by country' ,echo=FALSE}
+ggplot(lovoo, aes(x=country)) +
+  geom_bar(fill='blue') + 
+  ylab(label='Number of users')
+```
+
+```{r results = 'asis', echo=FALSE}
+coun_age <- table(lovoo$country, lovoo$age)
+print(xtable(coun_age, caption="Country vs age", label="counage"), comment=FALSE,
+            caption.placement="top", type="latex")
+```
+
+
+```{r agecount, fig.cap='Number of users by age and country' ,echo=FALSE}
+lovoo.high.country <- lovoo[lovoo$country %in% c('CH' , 'DE', 'FR', 'IT'),]
+ggplot(lovoo.high.country, aes(x=country)) +
+  geom_bar(aes(fill=country)) + 
+  ylab(label='Number of users') + 
+  facet_grid(~age)
+```
+
+```{r boxplotdistance, fig.cap='Side by side boxplots of age, country and distance', echo=FALSE}
+ggplot(lovoo.high.country, aes(x=(country), y=distance)) +
+  geom_boxplot(aes(fill=country), notched=TRUE) +
+  ylab(label='Distance') +
+  facet_grid(~ age)
+```
+
+
+```{r boxplotdistance2, fig.cap='Side by side boxplots of age, country and distance (log scale)', echo=FALSE}
+ggplot(lovoo.high.country, aes(x=(country), y=distance)) +
+  geom_boxplot(aes(fill=country), notched=TRUE) +
+  scale_y_log10() +
+  ylab(label='Distance') +
+  facet_grid(~ age)
+```
+
+
+
+```{r agecount, fig.cap='Number of users by age' ,echo=FALSE}
+ggplot(lovoo, aes(x=age)) +
+  geom_bar(fill='green') + 
+  ylab(label='Number of users')
+```
+
+
+```{r countrycount, fig.cap='Number of users by country' ,echo=FALSE}
+ggplot(lovoo, aes(x=age, y=distance)) +
+  geom_point() + 
+  ylab(label='Number of profile pictures')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
