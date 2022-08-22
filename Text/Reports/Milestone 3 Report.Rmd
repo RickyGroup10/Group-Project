@@ -270,8 +270,6 @@ Looking at Mahalanobis distance we can see there are some very surprising values
 Figure \@ref(fig:pairsCount) further shows where the very surprising values are - they are mainly on the fringes of the data. although in the univariate distributions we can see that most very suprising values do make up the lower end of the photos which is what we would assume was normal. 
 There will have to be more discussion around the exclusion of points from the data. 
 
-*The contour plots are giving a warning message, I think due to scale*
-
 All contour plots (Figure \@ref(fig:contourPFP), Figure \@ref(fig:contourKP), Figure \@ref(fig:contourKPF)) are centered around zero and spread with a positive relationship to each other. 
 
 
