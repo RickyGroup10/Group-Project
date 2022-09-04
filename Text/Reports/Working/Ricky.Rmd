@@ -56,7 +56,7 @@ summary(lovoo)
 ## Analysis of the factors: country, vip, & distance
 ### Creating a dataset of the assigned variables
 ```{r}
-new_dataset <- d.dataset[, c("distance", "country", "isVip")]
+new_dataset <- lovoo[, c("distance", "country", "isVip")]
 ```
 
 ### Univariate Analysis
@@ -92,11 +92,6 @@ It can be observed that the data is left skewed. The majority of users, set dist
 
 # Bivariate
 
-### setting distances of NA to average 
-```{r}
-new_dataset$distance[is.na(new_dataset$distance)] <- 207.23
-cor(new_dataset$distance, new_dataset$counts_kisses)
-```
 
 ### Correlation between distance and isVip
 ```{r}

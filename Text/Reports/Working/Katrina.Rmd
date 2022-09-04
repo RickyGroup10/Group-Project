@@ -49,7 +49,7 @@ summary(lovoo)
 
 
 ```{r}
-dating<-loovoo %>% select(counts_pictures, counts_profileVisits, counts_kisses)
+dating<-lovoo %>% select(counts_pictures, counts_profileVisits, counts_kisses)
 head(dating) # subsetted the info I would be working with 
 ```
 
