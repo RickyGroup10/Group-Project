@@ -1,0 +1,32 @@
+Meeting 12:00pm 5 September 2022
+
+Katrina, Max and Lissa were present. Apologies from Ricky due to illness.
+
+Notes from discussion board re report 4:
+Please notice that Report IV refers to a consolidated EDA (quantitative and qualitative). 
+It should include goodness-of-fit tests and hypothesis testing. Which tests you will apply 
+depends on what you have gathered from the EDA.
+include things like using mahalanobis distances to check group membership, tests of 
+equalilty of means and variances, and testing of whether distributions are normal 
+(in addition to the graphical analysis that we did for report 3)?
+Exactly, but I would not say "in addition". EDA helps us raise interesting hypotheses about 
+the process that produced the data. Ideally, you should not "pile" or blindly add results. 
+Let EDA speak to you, formulate questions, and answer them with the tools we have seen in the lectures.
+
+
+Discussion on next steps for our milestone 4 report. Everyone will look at what we did in report 3 and 
+find the questions that interest them the most and where we want to go from here. 
+We will discuss this tomorrow.
+
+Please put your interesting questions here:
+-
+-
+-
+-
+-
+-
+
+
+Presentation next week. We had a quick discussion regarding our presentation next week. We agreed to meet next 
+Monday to discuss this further. Everyone needs to send a photo of themselves for the presentation slides, either
+send this via discord or place in github in the presentations folder.
