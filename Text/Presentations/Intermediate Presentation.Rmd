@@ -1,0 +1,36 @@
+---
+title: "Dating App User Profiles' stats - Lovoo v3"
+author: "Group 10 - Lissa, Ricky, Max and Katrina"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Group 10 Members
+
+
+
+## Dating App User Profiles' stats - Lovoo v3 A textual description of the data set; highlight your interest in this data set
+
+
+
+## One or two visualisations that give your audience an idea of the data set
+
+
+
+
+## Anything else you have found interesting in the data
+
+
+
+
+## Your future steps
+
+
+
+## References (if needed)
+
+
+
