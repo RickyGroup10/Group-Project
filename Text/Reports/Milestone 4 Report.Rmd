@@ -34,6 +34,8 @@ require(reshape2)
 
 # Exploratory Data Analysis of our overall data
 
+# Univariate
+
 We (group 10) decided to use the Dating App User Profiles' stats data set. The data set is available on kaggle (@Lovoov3) and the license to use the data set is available on creativecommons (@License). We decided to explore the variables age, counts_pictures, counts_profileVisits, counts_kisses, distance, country and isVip.
 
 **Age** is the users age, **counts_pictures** is the number of pictures on the user's profile, **counts_profileVisits** is the number of clicks on this user (to see his/her full profile) from other user accounts, **counts_kisses** is the number of unique user accounts that "liked" (called "kiss" on the platform) this user account, **distance** is the distance between this user's city/location and the location of the user account that was used to fetch the data of this user, **country** is the user's country, **isVip** is a 1 if the user is VIP. [It was possible to buy a VIP status with real money. This status came with benefits.].
@@ -369,11 +371,15 @@ countrybar2 +
   theme(plot.title=element_text(hjust=0.5))
 ```
 
-There appears to be strong positive correlation between the number of profiles visits and the number of likes that a user receives. There is also positive correlation between the number of pictures a user has and the number of profile visits they receive, as well as the number of likes the user has. There is slight positive correlation between the age of the user and the distance between this user's city/location and the location of the user account that was used to fetch the data of the user. There appears to be no correlation between age and likes, profile visits and pictures, nor distance and likes, profile visits and pictures. This can been seen in figure \@ref(fig:correlationmatrix) and supported by the pairs plots in figure \@ref(fig:pairsplot).
+# Bivariate and Multivariate
 
-There appears to be a positive correlation between the number of profile pictures a user has and the number of profile visits they receive, as well as the number of likes the profile receives. It appears that having Vip status has a higher correlation in these cases. The number of likes on a profile and the number of profile visits is strongly positively correlated, this is only slightly higher in Vip's compared to non-Vip's as seen in figure \@ref(fig:pairsplotvip). The correlation between countries for these variables varies a little. The biggest thing to note is that Italy appears to have a correlation of 0.947 between the number of likes a user has and the number of visits (figure \@ref(fig:pairsplotcountry)).
+There appears to be strong positive correlation between the number of profiles visits and the number of likes that a user receives. There is also positive correlation between the number of pictures a user has and the number of profile visits they receive, as well as the number of likes the user has. There is slight positive correlation between the age of the user and the distance between this user's city/location and the location of the user account that was used to fetch the data of the user. There appears to be no correlation between age and likes, profile visits and pictures, nor distance and likes, profile visits and pictures. This can been seen in figure \@ref(fig:correlationmatrix) and numerically in table \@ref(correlationmatrixnum), and supported by the pairs plots in figure \@ref(fig:pairsplot).
 
-Earlier we say that there was significantly more non-Vip user;s than Vip users (table \@ref(vipfreq)). In  shows that 3901 users are not Vip's while only 91 are Vip's.We can see in table \@ref(vipcountry) that Switzerland has the most Vip's, this is supported in figure \@ref(fig:countcountryvip).
+Earlier we saw that there was significantly more non-Vip user's than Vip users (table \@ref(vipfreq)). In  shows that 3901 users are not Vip's while only 91 are Vip's. We can see in table \@ref(vipcountry) that Switzerland has the most Vip's, this is supported in figure \@ref(fig:barvipcountry).
+
+We see that there is a high correlation (0.89) between profile visits and profile likes (table \@ref(correlationmatrixnum)). We see from figure \@ref(fig:scatterplot) that there is a positive relationship between profile visits and profile likes. We can also see there are several outliers that we should remove as they can be very influential to our data. After removing the outliers from figure \@ref(fig:scatterplot) we see the same positive relationship but the outlieing profiles are gone (figure \@ref(fig:scatterplot2)).
+
+We see that the number of users by age tends to increase in Germany and peak at 22 years old before decreasing. Where as in France and Switzerland they tend to start with a larger number of users at younger age and decrease as age increases. This can be seen in figure \@ref(fig:agecount).
 
 ```{r correlationmatrix, fig.cap="Correlation Matrix", echo=FALSE, warning=FALSE}
 ggcorrplot(cor(lovoo[,1:5]),
@@ -383,10 +389,137 @@ ggcorrplot(cor(lovoo[,1:5]),
   ggtitle("Correlation Matrix") 
 ```
 
+```{r results = 'asis', echo=FALSE, warning=FALSE}
+c <- cor(lovoo[,1:5])
+
+print(xtable(c, caption="Correlation matrix", label="correlationmatrixnum"), comment=FALSE,
+            caption.placement="top", type="latex")
+```
+
 ```{r pairsplot, fig.cap='Pairs plot', echo=FALSE}
 ggpairs(lovoo[,1:5]) +
   ggtitle("Pairs plots of age, pictures, profile visits, likes and distance") +
   theme(plot.title=element_text(hjust=0.5)) 
+```
+
+```{r results = 'asis', echo=FALSE}
+newtab <- table(lovoo$country, lovoo$isVip)
+colnames(newtab) <- c("isVip - No", "isVip - Yes")
+print(xtable(newtab, caption="Summary Statistics - isVip (or not) by country", label="vipcountry"), comment=FALSE,
+            caption.placement="top", type="latex")
+```
+# Reference isn't working!
+
+```{r barvipcountry, fig.cap='Count of users by country and Vip status ', echo=FALSE}
+ggplot(lovoo) +
+  geom_bar(aes(x = country, fill = isVip)) +
+  ggtitle("Count of users by country and Vip status") +
+  theme_tufte() +
+  theme(plot.title=element_text(hjust=0.5))
+```
+#fix size of plot! Reference isn't working
+```{r agecount, fig.cap='Number of users by age and country' ,echo=FALSE}
+ggplot(lovoo, aes(x=country)) +
+  geom_bar(aes(fill=country)) + 
+  ylab(label='Number of users') + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  facet_grid(~age)
+```
+
+```{r, echo=FALSE}
+lovoo2 <- lovoo[, c("counts_profileVisits", "counts_kisses", "isVip")]
+```
+
+```{r scatterplot, fig.cap='Scatterplot of profile visits vs profile likes', echo=FALSE}
+plot(lovoo2$counts_profileVisits, lovoo2$counts_kisses, main="Profile visits against Profile likes",
+   xlab="Profile Visits", ylab="Profile Likes")
+abline(lm(lovoo2$counts_kisses ~ lovoo2$counts_profileVisits, data = lovoo2), col = "red")
+```
+
+```{r , echo=FALSE}
+Q1visits <- quantile(lovoo2$counts_profileVisits, .25)
+Q3visits <- quantile(lovoo2$counts_profileVisits, .75)
+
+Q1likes <- quantile(lovoo2$counts_kisses, .25)
+Q3likes <- quantile(lovoo2$counts_kisses, .75)
+
+IQRvisits <- IQR(lovoo2$counts_profileVisits)
+IQRlikes <- IQR(lovoo2$counts_kisses)
+
+lovoo2 <- subset(lovoo2, lovoo2$counts_profileVisits > (Q1visits - 1.5*IQRvisits) & lovoo2$counts_profileVisits < (Q3visits + 1.5*IQRvisits))
+lovoo2 <- subset(lovoo2, lovoo2$counts_kisses > (Q1likes - 1.5*IQRlikes) & lovoo2$counts_kisses < (Q3likes + 1.5*IQRlikes))
+```
+
+```{r scatterplot2, fig.cap='Revised scatterplot of profile visits vs profile likes', echo=FALSE}
+plot(lovoo2$counts_profileVisits, lovoo2$counts_kisses, main="Revised - Profile visits against Profile likes",
+   xlab="Profile Visits", ylab="Profile Likes")
+abline(lm(lovoo2$counts_kisses ~ lovoo2$counts_profileVisits, data = lovoo2), col = "red", lwd=2)
+```
+
+# Burning questions
+
+# Profile Visits, Like, Country and Vip
+
+After our initial analysis we know that profile visits and profile likes are highly correlated. We want to know if the number of profile visits and likes varies from country. We are also interested to know if having Vip status in each country affects the number of profile visits and likes.
+
+There appears to be a positive correlation between the number of profile pictures a user has and the number of profile visits they receive, as well as the number of likes the profile receives. It appears that having Vip status has a higher correlation in these cases. The number of likes on a profile and the number of profile visits is strongly positively correlated, this is only slightly higher in Vip's compared to non-Vip's as seen in figure \@ref(fig:pairsplotvip). The correlation between countries for these variables varies a little. The biggest thing to note is that Italy appears to have a correlation of 0.947 between the number of likes a user has and the number of visits (figure \@ref(fig:pairsplotcountry)).
+
+The boxplot of the number of profile visits and likes by country is very hard to read (figure \@ref(fig:boxlikeviscountry)), we have transformed this by taking the log of profile likes. We can see from th revised boxplot (figure \@ref(fig:boxlikeviscountry)) that Germany has the largest range of profile visits while France has the least. France, Germany and Italy have very similar ranges of the number of profile likes. Our group of 'other' countries appears to have the largest median for the number of profile likes. We can conclude that there is a difference in the number of profile visits and the number of profile likes for each country.
+
+Looking at figure \@ref(fig:boxlikeviscountryvip) we can see that having Vip status tends to improve the number of profile likes a user receives in our four main countries. However this is not the case in the 'other' countries as only 1 person from 'other' has Vip status. The biggest difference can be seen in Germany.
+
+To conclude if you live in Germany and you want more profile likes then you should like to purchase Vip status.
+
+```{r, echo=FALSE}
+# Reading in the data
+lovoo <- read.csv("../../Data/CSV/lovoo_v3_users_api-results.csv")
+
+# Converting data to a data frame
+lovoo <- data.frame(lovoo) 
+
+# Selecting the columns that contain our variables
+lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", "counts_kisses", "distance", "country", "isVip")]
+
+# Replacing the missing values in distance with the mean 207.23
+lovoo$distance[is.na(lovoo$distance)] <- 207.23
+
+# Replacing variable names
+lovoo["country"][lovoo["country"] == 'CH'] <- 'Switzerland'
+lovoo["country"][lovoo["country"] == 'DE'] <- 'Germany'
+lovoo["country"][lovoo["country"] == 'FR'] <- 'France'
+lovoo["country"][lovoo["country"] == 'IT'] <- 'Italy'
+lovoo["country"][lovoo["country"] == 'AR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'AT'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'AU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BE'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CF'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CZ'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ES'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ET'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'GB'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'HU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ID'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'IN'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'JM'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LI'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'NL'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'PE'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'PH'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'RO'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'RU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'SC'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'TR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'UA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'US'] <- 'Other'
+
+# Setting country and isVip to be factors.
+lovoo$country <- as.factor(lovoo$country)
+lovoo$isVip <- as.factor(lovoo$isVip)
 ```
 
 ```{r pairsplotvip, fig.cap="Pairs plot by isVip",warning = FALSE, echo=FALSE}
@@ -396,6 +529,7 @@ ggplot2::scale_color_manual(values=c("green", "blue")) +
 ggplot2::theme(axis.text.x = element_text(angle=90, hjust=1))
 ```
 
+
 ## Need to fix this plot!!!!!!!!!!!!!!!!!
 ```{r pairsplotcountry, fig.cap="Pairs plot by country",warning = FALSE, echo=FALSE}
 ggpairs(lovoo[,1:5],
@@ -404,42 +538,38 @@ ggplot2::scale_color_manual(values=c("lightgray", "green", "blue", "red", "orang
 ggplot2::theme(axis.text.x = element_text(angle=90, hjust=1))
 ```
 
-```{r results = 'asis', echo=FALSE}
-newtab <- table(lovoo$country, lovoo$isVip)
-colnames(newtab) <- c("isVip - No", "isVip - Yes")
-print(xtable(newtab, caption="Summary Statistics - isVip (or not) by country", label="vipcountry"), comment=FALSE,
-            caption.placement="top", type="latex")
-```
-
-```{r countcountryvip, fig.cap='Count of users by country and Vip status ', echo=FALSE}
-ggplot(lovoo) +
-  geom_bar(aes(x = country, fill = isVip)) +
-  ggtitle("Count of users by country and Vip status") +
-  theme_tufte() +
+```{r boxlikeviscountry, fig.cap='Boxplot of profile visits and likes by country', echo=FALSE}
+ggplot(lovoo, aes(x=counts_profileVisits, y=counts_kisses)) +
+  geom_boxplot(aes(col=country), notch=TRUE) +
+  xlab('Number of Profile Visits') + 
+  ylab('Number of Profile Likes') +
+  ggtitle("Profile Visits vs Profile Likes") +
+  facet_grid(~ country) +
+  theme(axis.text.x = element_text(size=7, angle=90, hjust=1)) +
   theme(plot.title=element_text(hjust=0.5))
 ```
-#Need to refernce this one!!!! if we keep it!
-```{r agecount, fig.cap='Number of users by age and country' ,echo=FALSE}
-ggplot(lovoo, aes(x=country)) +
-  geom_bar(aes(fill=country)) + 
-  ylab(label='Number of users') + 
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
-  facet_grid(~age)
+
+```{r boxlikeviscountry2, fig.cap='Revised boxplot of profile visits and likes by country', echo=FALSE}
+ggplot(lovoo, aes(x=counts_profileVisits, y=log(counts_kisses))) +
+  geom_boxplot(aes(col=country), notch=TRUE) +
+  xlab('Number of Profile Visits') + 
+  ylab('Number of Profile Likes') +
+  ggtitle("Profile Visits vs Log Profile Likes") +
+  facet_grid(~ country) +
+  theme(axis.text.x = element_text(size=7, angle=90, hjust=1)) +
+  theme(plot.title=element_text(hjust=0.5))
 ```
 
-
-
-# Burning questions
-
-
-After the analysis above we want to explore further is:
-Does having VIP in different countries affect visits/likes differently
-- Do country and age affect visits/likes/count of pictures
-
-
-
-
-
+```{r boxlikeviscountryvip, fig.cap='Revised boxplot of profile visits and likes by country and vip', echo=FALSE}
+ggplot(lovoo, aes(x=counts_profileVisits, y=log(counts_kisses))) +
+  geom_boxplot(aes(col=country), notch=TRUE) +
+  xlab('Number of Profile Visits') + 
+  ylab('Number of Profile Likes') +
+  ggtitle("Profile Visits, Log Profile Likes for each country and Vip") +
+  facet_grid(~ isVip) +
+  theme(axis.text.x = element_text(size=7, angle=90, hjust=1)) +
+  theme(plot.title=element_text(hjust=0.5))
+```
 
 
 
@@ -488,37 +618,8 @@ ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
   geom_tile()
 ```
 
-```{r scatterplot, fig.cap='Scatterplot of profile visits vs profile likes', echo=FALSE}
-plot(lovoo$counts_profileVisits, lovoo$counts_kisses, main="How do profile visits affect profile likes?",
-   xlab="Profile Visits", ylab="Profile Likes")
-abline(lm(lovoo$counts_kisses ~ lovoo$counts_profileVisits, data = lovoo), col = "red")
-```
 
-```{r , echo=FALSE}
-Q1visits <- quantile(lovoo$counts_profileVisits, .25)
-Q3visits <- quantile(lovoo$counts_profileVisits, .75)
 
-Q1likes <- quantile(lovoo$counts_kisses, .25)
-Q3likes <- quantile(lovoo$counts_kisses, .75)
-
-IQRvisits <- IQR(lovoo$counts_profileVisits)
-IQRlikes <- IQR(lovoo$counts_kisses)
-
-lovoo <- subset(lovoo, lovoo$counts_profileVisits > (Q1visits - 1.5*IQRvisits) & lovoo$counts_profileVisits < (Q3visits + 1.5*IQRvisits))
-lovoo <- subset(lovoo, lovoo$counts_kisses > (Q1likes - 1.5*IQRlikes) & lovoo$counts_kisses < (Q3likes + 1.5*IQRlikes))
-```
-
-```{r scatterplot2, fig.cap='Revised scatterplot of profile visits vs profile likes', echo=FALSE}
-plot(lovoo$counts_profileVisits, lovoo$counts_kisses, main="How do profile visits affect profile likes?",
-   xlab="Profile Visits", ylab="Profile Likes")
-abline(lm(lovoo$counts_kisses ~ lovoo$counts_profileVisits, data = lovoo), col = "red", lwd=2)
-```
-
-```{r freqvisitlikes, fig.cap='Histograms of Frequency of Profile Visits and Frequency of Profile Likes', echo=FALSE}
-par(mfrow=c(1,2))
-hist(lovoo$counts_profileVisits, main="Distribution of profile visits", xlab="Profile Visits")
-hist(lovoo$counts_kisses, main="Distribution of profile likes", xlab="Profile Likes")
-```
 
 ```{r desnitylikes, fig.cap='Density of Profile Likes based on VIP status', echo=FALSE}
 par(mfrow=c(1,2))
@@ -607,85 +708,9 @@ dating <-lovoo[,c("counts_pictures", "counts_profileVisits", "counts_kisses")]
 #head(dating) # subsetted the info I would be working with 
 ```
 
-```{r histPics, fig.cap="Square-root transformed histogram of counts_pictures", echo=FALSE, warning=FALSE}
-mz <- mean(dating[,1])
-sdz <- sd(dating[,1])
 
-ggplot(dating, aes(x=dating[,1])) +
-  geom_histogram(aes(y=..density..),
-                 col="black", fill="white") +
-  xlab("Observations") +
-  ylab("Histogram, smoothed histogram, and estimated normal density") +
-  ggtitle("Histogram of Count of Pictures")+
-  geom_density(kernel="epanechnikov", size=2, col="purple", alpha=.1) +
-  stat_function(fun = "dnorm", args=list(mean=mz, sd=sdz), 
-                col="red", size=2, alpha=.5) +
-  geom_vline(xintercept = mz, col="red") +
-  geom_boxplot(aes(y=-.02), width=.01, notch = TRUE)+
-  theme_tufte()
-```
 
-```{r histVisits, fig.cap="Square-root transformed histogram of counts_profileVisits", echo=FALSE, warning=FALSE}
-dating_r<-dating[,2]
-dating_removed<-dating_r[dating_r<100000]
 
-mz <- mean(dating_removed)
-sdz <- sd(dating_removed)
-
-dating_removed_df<-as.data.frame(dating_removed)
-
-ggplot(dating_removed_df, aes(x=dating_removed)) +
-  geom_histogram(aes(y=..density..),
-                 col="black", fill="white") +
-  xlab("Observations") +
-  ylab("Histogram, smoothed histogram, and estimated normal density") +
-  ggtitle("Histogram of Count of Profile Visits")+
-  geom_density(kernel="epanechnikov", size=2, col="purple", alpha=.1) +
-  stat_function(fun = "dnorm", args=list(mean=mz, sd=sdz), 
-                col="red", size=2, alpha=.5) +
-  geom_vline(xintercept = mz, col="red") +
-  geom_boxplot(aes(y=-.02), width=.01, notch = TRUE)+
-  theme_tufte() + scale_x_continuous(trans = 'sqrt')
-```
-
-```{r histKiss, fig.cap="Square-root transformed histogram of counts_kisses", echo=FALSE, warning=FALSE}
-mz <- mean(dating[,3])
-sdz <- sd(dating[,3])
-
-ggplot(dating, aes(x=dating[,3])) +
-  geom_histogram(aes(y=..density..),
-                 col="black", fill="white") +
-  xlab("Observations") +
-  ylab("Histogram, smoothed histogram, and estimated normal density") +
-  ggtitle("Histogram of Count of Kisses")+
-  geom_density(kernel="epanechnikov", size=2, col="purple", alpha=.1) +
-  stat_function(fun = "dnorm", args=list(mean=mz, sd=sdz), 
-                col="red", size=2, alpha=.5) +
-  geom_vline(xintercept = mz, col="red") +
-  geom_boxplot(aes(y=-.02), width=.01, notch = TRUE)+
-  theme_tufte()+ scale_x_continuous(trans = 'sqrt')
-```
-
-```{r results = 'asis', echo=FALSE}
-b <- round(var(dating), 3)
-
-print(xtable(b, caption="Variance matrix", label="varkatrina"), comment=FALSE,
-            caption.placement="top", type="latex")
-```
-
-```{r results = 'asis', echo=FALSE, warning=FALSE}
-c <- cor(dating)
-
-print(xtable(c, caption="Correlation matrix", label="corkatrina"), comment=FALSE,
-            caption.placement="top", type="latex")
-```
-```{r corVisCount, fig.cap="Correlation plot for counts pictures, profile visits, and kisses visualised", echo=FALSE}
-ggcorrplot(cor(dating),
-method = "circle",
-hc.order = TRUE,
-type = "lower"
-)
-```
 
 
 
@@ -792,6 +817,22 @@ ggplot(lovoo.high.country, aes(x=(country), y=distance)) +
   ylab(label='Distance') +
   facet_grid(~ age)
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
