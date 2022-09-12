@@ -516,6 +516,7 @@ lovoo["country"][lovoo["country"] == 'SC'] <- 'Other'
 lovoo["country"][lovoo["country"] == 'TR'] <- 'Other'
 lovoo["country"][lovoo["country"] == 'UA'] <- 'Other'
 lovoo["country"][lovoo["country"] == 'US'] <- 'Other'
+unique(lovoo$country) 
 
 # Setting country and isVip to be factors.
 lovoo$country <- as.factor(lovoo$country)
@@ -774,6 +775,29 @@ geom_density_2d(col="blue") + xlab("Count of kisses") + ylab("Count of profile v
 # Age, country and number of pictures
 
 Figure \@ref(fig:agecount2) shows the number of users by age. The number of users is heavier in the age range 19-22 (inclusive). It appears that a large number of countries have a very small number of users, while a few countries such as Switzerland, Germany, France and Italy have larger numbers of users. This can be seen in \@ref(fig:freqcountry). Table \@ref(counage) shows us a breakdown of the number of users per country by age. Again this supports higher numbers in Switzerland, Germany, France and Italy. Taking a closer look at the countries - Switzerland, Germany, France and Italy we can look at the number of users per country by age. Figure \@ref(fig:agecount) shows that Switzerland has the larger number of users with ages 19-21 and Germany has the larger number of users for ages 22-24. Looking at the boxplot in figure \@ref(fig:boxplotdistance) we can see that there are a few very large outliers in the data and it is very hard to read the boxplots. By taking the log of the data we can see the median more clearly. Figure \@ref(fig:boxplotdistance2) shows that the medians vary, however there is not much variability within a country across the different ages. 
+
+```{r}
+plots <- vector('list', length(c(0,1)))
+
+for (x in c(0,1)) {
+  dating <- lovoo[c("counts_pictures", "counts_profileVisits", "counts_kisses", "country")]
+  dating<-subset(dating, country==x)
+  pvals_v <- vector('list', nrow(dating))
+  for (i in 1:nrow(dating)) {
+    x.new <- dating[i,-4]
+    dating <- dating %>%  filter(!row_number() %in% c(i))
+    est.mu <- colMeans(dating[, -4])
+    est.covar <- var(dating[, -4])
+  
+    d.new <- mahalanobis(x.new, center = est.mu, cov = est.covar)
+    pvals_v[[i]] = pchisq(d.new, df = 3, lower.tail = FALSE)
+  }
+  df<-data.frame(val = unlist(pvals_v)) 
+  plots[[x+1]] = ggplot(df, aes(val)) +   geom_histogram(bins=10) + theme_bw() +
+  geom_vline(xintercept = 0.05, col="red") 
+}
+ggarrange(plotlist=plots,ncol = 2, nrow = 1)
+```
 
 ```{r, echo=FALSE}
 
