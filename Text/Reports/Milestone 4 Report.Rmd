@@ -30,6 +30,8 @@ require(ggcorrplot)
 require(fitdistrplus)
 require(reshape2)
 #require(farff)
+require(ggpubr)
+require(dplyr)
 ```
 
 # Exploratory Data Analysis of our overall data
@@ -1025,7 +1027,45 @@ fig.7 <- ggarrange(plot31, plot32, plot33, plot34, plot35, nrow = 3, ncol = 2)
 fig.7
 ```
 
+# Testing for class membership using Mahalanobis distance (isVip)
 
+Firstly, we will subset the data based on whether or not the user is a VIP, then iterate through each observation and check it against the data as if it were a new sample. We will take it's measures (pictures, visits, and kisses) and delete it from the data set. 
+
+From this we will estimate the mean and covariance vectors of the measures to find the distance between the observation and the measurement model (using df = 3). The p-value of each distance will be recorded as that shows how significant the distance is and helps us to reject or accept the null hypothesis. Our alpha level is 0.05.
+
+Hypothesis: 
++ H0: $x_{obs}$ is not consistent with the ideal distance
++ H1: $x_{obs}$ is consistent with the ideal distance
+
+From figure \@ref(fig:mahadistVIP) we can see that for about 170 observations of non VIPs have p-values lower than our alpha level, so we reject the null hypothesis and conclude they are not consistent with the ideal distance. For the VIPs, 8 observations will reject the null hypothesis. 
+
+This is a good result for our data, meaning only a small proportion of our data needs to be looked into for outlier removal. 
+
+```{r mahadistVIP, fig.cap="Histograms of Mahalanobis Distance p-values", echo=FALSE, warning=FALSE}
+plots <- vector('list', length(c(0,1)))
+titles <- c("Non VIP", "VIP")
+
+for (x in c(0,1)){
+  dating <- lovoo[c("counts_pictures", "counts_profileVisits", "counts_kisses", "isVip")]
+  dating<-subset(dating, isVip==x)
+  pvals_v <- vector('list', nrow(dating))
+  for (i in 1:nrow(dating)) {
+    x.new <- dating[i,-4]
+    dating <- dating %>%  filter(!row_number() %in% c(i))
+    est.mu <- colMeans(dating[, -4])
+    est.covar <- var(dating[, -4])
+  
+    d.new <- mahalanobis(x.new, center = est.mu, cov = est.covar)
+    pvals_v[[i]] = pchisq(d.new, df = 3, lower.tail = FALSE)
+  }
+  df<-data.frame(val = unlist(pvals_v)) 
+  plots[[x+1]] = ggplot(df, aes(val)) +   geom_histogram(bins=15) + theme_bw() +
+  geom_vline(xintercept = 0.05, col="red") + xlab("P-value obtained per observation") + ggtitle(titles[x+1])+
+    ylab("Count of observations")
+}
+ggarrange(plotlist=plots,ncol = 2, nrow = 1)
+
+```
 
 
 
