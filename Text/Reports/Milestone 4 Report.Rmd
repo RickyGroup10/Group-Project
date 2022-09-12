@@ -30,6 +30,8 @@ require(ggcorrplot)
 require(fitdistrplus)
 require(reshape2)
 #require(farff)
+require(ggpubr)
+require(dplyr)
 ```
 
 # Exploratory Data Analysis of our overall data
@@ -845,9 +847,228 @@ ggplot(lovoo.high.country, aes(x=(country), y=distance)) +
   facet_grid(~ age)
 ```
 
+# Normality Test - Ricky's Section
 
+```{r echo = FALSE}
+less_eq_20 = names(table(lovoo$country))[table(lovoo$country) <= 20]
+lovoo$country[lovoo$country %in% less_eq_20] = "OTHER"
+table(lovoo$country)
+```
 
+## Splitting factors
 
+```{r echo = FALSE}
+# Country
+Switzerland <- lovoo[lovoo$country == "CH", ]
+Switzerland <- data.frame(Switzerland)
+Germany <- lovoo[lovoo$country == "DE", ]
+Germany <- data.frame(Germany)
+France <- lovoo[lovoo$country == "FR", ]
+France <- data.frame(France)
+Italy <- lovoo[lovoo$country == "IT",]
+Italy <- data.frame(Italy)
+Other <- lovoo[lovoo$country == "OTHER", ]
+Other <- data.frame(Other)
+
+# isVip
+isavip <- lovoo[lovoo$isVip == 1, ]
+isnotavip <- lovoo[lovoo$isVip == 0, ]
+```
+
+## Shapiro-Wilks test of normality
+
+```{r echo = FALSE}
+# Goodness of Fit test - factor is a vip
+shapiro.test(isavip$age)
+shapiro.test(isavip$counts_pictures)
+shapiro.test(isavip$counts_profileVisits)
+shapiro.test(isavip$counts_kisses)
+shapiro.test(isavip$distance)
+
+# Goodness of Fit test - factor is not a vip
+shapiro.test(isnotavip$age)
+shapiro.test(isnotavip$counts_pictures)
+shapiro.test(isnotavip$counts_profileVisits)
+shapiro.test(isnotavip$counts_kisses)
+shapiro.test(isnotavip$distance)
+
+# Goodness of fit test - factor Switzerland
+shapiro.test(Switzerland$age)
+shapiro.test(Switzerland$counts_pictures)
+shapiro.test(Switzerland$counts_profileVisits)
+shapiro.test(Switzerland$counts_kisses)
+shapiro.test(Switzerland$distance)
+
+# Goodness of fit test - factor Germany
+shapiro.test(Germany$age)
+shapiro.test(Germany$counts_pictures)
+shapiro.test(Germany$counts_profileVisits)
+shapiro.test(Germany$counts_kisses)
+shapiro.test(Germany$distance)
+
+## Goodness of fit test - factor France
+shapiro.test(France$age)
+shapiro.test(France$counts_pictures)
+shapiro.test(France$counts_profileVisits)
+shapiro.test(France$counts_kisses)
+shapiro.test(France$distance)
+
+# Goodness of fit test - factor Italy
+shapiro.test(Italy$age)
+shapiro.test(Italy$counts_pictures)
+shapiro.test(Italy$counts_profileVisits)
+shapiro.test(Italy$counts_kisses)
+shapiro.test(Italy$distance)
+
+# Goodness of fit test - factor Other
+shapiro.test(Other$age)
+shapiro.test(Other$counts_pictures)
+shapiro.test(Other$counts_profileVisits)
+shapiro.test(Other$counts_kisses)
+shapiro.test(Other$distance)
+```
+
+all tests of normality's p-values support rejecting the null hypothesis ($H_{0}$: the population follows a normal distribution.) So, we believe that none of the variables factors follow a normal distribution. 
+
+## Quantile-Quantile Plots
+
+```{r warning = FALSE, echo = FALSE}
+# factor is a vip
+plot1 <- ggplot(isavip, aes(sample = age)) + stat_qq(size = 0.5) + labs(title = "Is a VIP - Age") + stat_qq_line()
+plot2 <- ggplot(isavip, aes(sample = counts_pictures)) + stat_qq(size = 0.5) + labs(title = "Is a VIP - Count of Pictures") + stat_qq_line()
+plot3 <-ggplot(isavip, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5) + labs(title = "Is a VIP - Profile visits") + stat_qq_line()
+plot4 <- ggplot(isavip, aes(sample = counts_kisses)) + stat_qq(size = 0.5) + labs(title = "Is a VIP - Count of Kisses") + stat_qq_line()
+plot5 <- ggplot(isavip, aes(sample = distance)) + stat_qq(size = 0.5) + labs(title = "Is a VIP - Distance") + stat_qq_line()
+```
+
+```{r fig.height = 10, fig.cap = "factor: isavip", warning = FALSE, echo = FALSE}
+fig.1 <- ggarrange(plot1, plot2, plot3, plot4, plot5, nrow = 3, ncol = 2)
+fig.1
+```
+
+```{r echo = FALSE}
+# factor is a vip
+plot6 <- ggplot(isnotavip, aes(sample = age)) + stat_qq(size = 0.5) + labs(title = "Is not a VIP - Age") + stat_qq_line()
+plot7 <- ggplot(isnotavip, aes(sample = counts_pictures)) + stat_qq(size = 0.5) + labs(title = "Is not a VIP - Count of Pictures") + stat_qq_line()
+plot8 <- ggplot(isnotavip, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5) + labs(title = "Is not a VIP - Profile visits") + stat_qq_line()
+plot9 <- ggplot(isnotavip, aes(sample = counts_kisses)) + stat_qq(size = 0.5) + labs(title = "Is not a VIP - Count of Kisses") + stat_qq_line()
+plot10 <- ggplot(isnotavip, aes(sample = distance)) + stat_qq(size = 0.5) + labs(title = "Is not a VIP - Distance") + stat_qq_line()
+```
+
+```{r fig.height = 10, fig.cap = "factor: isnotavip", warning = FALSE, echo = FALSE}
+fig.2 <- ggarrange(plot6, plot7, plot8, plot9, plot10, nrow = 3, ncol = 2)
+fig.2
+```
+
+```{r warning = FALSE, echo = FALSE}
+# factor Switzerland
+plot11 <- ggplot(Switzerland, aes(sample = age)) + stat_qq(size = 0.5) + labs(title = "Switzerland - Age") + stat_qq_line()
+plot12 <- ggplot(Switzerland, aes(sample = counts_pictures)) + stat_qq(size = 0.5) + labs(title = "Switzerland - Count of Pictures") + stat_qq_line()
+plot13 <- ggplot(Switzerland, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5) + labs(title = "Switzerland - Profile visits") + stat_qq_line()
+plot14 <- ggplot(Switzerland, aes(sample = counts_kisses)) + stat_qq(size = 0.5) + labs(title = "Switzerland - Count of Kisses") + stat_qq_line()
+plot15 <- ggplot(Switzerland, aes(sample = distance)) + stat_qq(size = 0.5) + labs(title = "Switzerland - Distance") + stat_qq_line()
+```
+
+```{r fig.height = 10, fig.cap = "factor: Switzerland", warning = FALSE,  echo = FALSE}
+fig.3 <- ggarrange(plot11, plot12, plot13, plot14, plot15, nrow = 3, ncol = 2)
+fig.3
+```
+
+```{r warning = FALSE, echo = FALSE}
+# factor Germany
+plot16 <- ggplot(Germany, aes(sample = age)) + stat_qq(size = 0.5) + labs(title = "Germany - Age") + stat_qq_line()
+plot17 <- ggplot(Germany, aes(sample = counts_pictures)) + stat_qq(size = 0.5) + labs(title = "Germany - Count of Pictures") + stat_qq_line()
+plot18 <- ggplot(Germany, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5) + labs(title = "Germany - Profile visits") + stat_qq_line()
+plot19 <- ggplot(Germany, aes(sample = counts_kisses)) + stat_qq(size = 0.5) + labs(title = "Germany - Count of Kisses") + stat_qq_line()
+plot20 <-ggplot(Germany, aes(sample = distance)) + stat_qq(size = 0.5) + labs(title = "Germany - Distance") + stat_qq_line()
+```
+
+```{r fig.height = 10, fig.cap = "factor: Germany", warning = FALSE, echo = FALSE}
+fig.4 <- ggarrange(plot16, plot17, plot18, plot19, plot20, nrow = 3, ncol = 2)
+fig.4
+```
+
+```{r warning = FALSE, echo = FALSE}
+# factor France
+plot21 <- ggplot(France, aes(sample = age)) + stat_qq(size = 0.5) + labs(title = "France - Age") + stat_qq_line()
+plot22 <- ggplot(France, aes(sample = counts_pictures)) + stat_qq(size = 0.5) + labs(title = "France - Count of Pictures") + stat_qq_line()
+plot23 <- ggplot(France, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5) + labs(title = "France - Profile visits") + stat_qq_line()
+plot24 <- ggplot(France, aes(sample = counts_kisses)) + stat_qq(size = 0.5) + labs(title = "France - Count of Kisses") + stat_qq_line()
+plot25 <- ggplot(France, aes(sample = distance)) + stat_qq(size = 0.5) + labs(title = "France - Distance") + stat_qq_line()
+```
+
+```{r fig.height = 10, fig.cap = "factor: France", warning = FALSE, echo = FALSE}
+fig.5 <- ggarrange(plot21, plot22, plot23, plot24, plot25, nrow = 3, ncol = 2)
+fig.5
+```
+
+```{r warning = FALSE, echo = FALSE}
+# factor Italy
+plot26 <- ggplot(Italy, aes(sample = age)) + stat_qq(size = 0.5) + labs(title = "Italy - Age") + stat_qq_line()
+plot27 <- ggplot(Italy, aes(sample = counts_pictures)) + stat_qq(size = 0.5) + labs(title = "Italy - Count of Pictures") + stat_qq_line()
+plot28 <- ggplot(Italy, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5) + labs(title = "Italy - Profile visits") + stat_qq_line()
+plot29 <- ggplot(Italy, aes(sample = counts_kisses)) + stat_qq(size = 0.5) + labs(title = "Italy - Counts of Kisses") + stat_qq_line()
+plot30 <- ggplot(Italy, aes(sample = distance)) + stat_qq(size = 0.5) + labs(title = "Italy - Distance") + stat_qq_line()
+```
+
+```{r fig.height = 10, fig.cap = "factor: Italy", warning = FALSE, echo = FALSE}
+fig.6 <- ggarrange(plot26, plot27, plot28, plot29, plot30, nrow = 3, ncol = 2)
+fig.6
+```
+
+```{r warning = FALSE, echo = FALSE}
+# factor Other
+plot31 <- ggplot(Other, aes(sample = age)) + stat_qq(size = 0.5) + labs(title = "Other - Age") + stat_qq_line()
+plot32 <- ggplot(Other, aes(sample = counts_pictures)) + stat_qq(size = 0.5) + labs(title = "Other - Count of Pictures") + stat_qq_line()
+plot33 <- ggplot(Other, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5) + labs(title = "Other - Profile visits") + stat_qq_line()
+plot34 <- ggplot(Other, aes(sample = counts_kisses)) + stat_qq(size = 0.5) + labs(title = "Other - Counts of Kisses") + stat_qq_line()
+plot35 <- ggplot(Other, aes(sample = distance)) + stat_qq(size = 0.5) + labs(title = "Other - Distance") + stat_qq_line()
+```
+
+```{r fig.height = 10, fig.cap = "factor: Other", warning = FALSE, echo = FALSE}
+fig.7 <- ggarrange(plot31, plot32, plot33, plot34, plot35, nrow = 3, ncol = 2)
+fig.7
+```
+
+# Testing for class membership using Mahalanobis distance (isVip)
+
+Firstly, we will subset the data based on whether or not the user is a VIP, then iterate through each observation and check it against the data as if it were a new sample. We will take it's measures (pictures, visits, and kisses) and delete it from the data set. 
+
+From this we will estimate the mean and covariance vectors of the measures to find the distance between the observation and the measurement model (using df = 3). The p-value of each distance will be recorded as that shows how significant the distance is and helps us to reject or accept the null hypothesis. Our alpha level is 0.05.
+
+Hypothesis: 
++ H0: $x_{obs}$ is not consistent with the ideal distance
++ H1: $x_{obs}$ is consistent with the ideal distance
+
+From figure \@ref(fig:mahadistVIP) we can see that for about 170 observations of non VIPs have p-values lower than our alpha level, so we reject the null hypothesis and conclude they are not consistent with the ideal distance. For the VIPs, 8 observations will reject the null hypothesis. 
+
+This is a good result for our data, meaning only a small proportion of our data needs to be looked into for outlier removal. 
+
+```{r mahadistVIP, fig.cap="Histograms of Mahalanobis Distance p-values", echo=FALSE, warning=FALSE}
+plots <- vector('list', length(c(0,1)))
+titles <- c("Non VIP", "VIP")
+
+for (x in c(0,1)){
+  dating <- lovoo[c("counts_pictures", "counts_profileVisits", "counts_kisses", "isVip")]
+  dating<-subset(dating, isVip==x)
+  pvals_v <- vector('list', nrow(dating))
+  for (i in 1:nrow(dating)) {
+    x.new <- dating[i,-4]
+    dating <- dating %>%  filter(!row_number() %in% c(i))
+    est.mu <- colMeans(dating[, -4])
+    est.covar <- var(dating[, -4])
+  
+    d.new <- mahalanobis(x.new, center = est.mu, cov = est.covar)
+    pvals_v[[i]] = pchisq(d.new, df = 3, lower.tail = FALSE)
+  }
+  df<-data.frame(val = unlist(pvals_v)) 
+  plots[[x+1]] = ggplot(df, aes(val)) +   geom_histogram(bins=15) + theme_bw() +
+  geom_vline(xintercept = 0.05, col="red") + xlab("P-value obtained per observation") + ggtitle(titles[x+1])+
+    ylab("Count of observations")
+}
+ggarrange(plotlist=plots,ncol = 2, nrow = 1)
+
+```
 
 
 
