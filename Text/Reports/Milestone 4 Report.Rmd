@@ -826,6 +826,8 @@ ggplot(lovoo.high.country, aes(x=(country), y=distance)) +
 
 # Normality Test - Ricky's Section
 
+# Reducing the variable country
+
 ```{r echo = FALSE}
 less_eq_20 = names(table(lovoo$country))[table(lovoo$country) <= 20]
 lovoo$country[lovoo$country %in% less_eq_20] = "OTHER"
@@ -911,11 +913,11 @@ all tests of normality's p-values support rejecting the null hypothesis ($H_{0}$
 
 ```{r warning = FALSE, echo = FALSE}
 # factor is a vip
-plot1 <- ggplot(isavip, aes(sample = age)) + stat_qq(size = 0.5) + labs(title = "Is a VIP - Age") + stat_qq_line()
-plot2 <- ggplot(isavip, aes(sample = counts_pictures)) + stat_qq(size = 0.5) + labs(title = "Is a VIP - Count of Pictures") + stat_qq_line()
-plot3 <-ggplot(isavip, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5) + labs(title = "Is a VIP - Profile visits") + stat_qq_line()
-plot4 <- ggplot(isavip, aes(sample = counts_kisses)) + stat_qq(size = 0.5) + labs(title = "Is a VIP - Count of Kisses") + stat_qq_line()
-plot5 <- ggplot(isavip, aes(sample = distance)) + stat_qq(size = 0.5) + labs(title = "Is a VIP - Distance") + stat_qq_line()
+plot1 <- ggplot(isavip, aes(sample = age)) + stat_qq(size = 0.5, col = "Blue") + labs(title = "Is a VIP - Age") + stat_qq_line()
+plot2 <- ggplot(isavip, aes(sample = counts_pictures)) + stat_qq(size = 0.5, col = "Blue") + labs(title = "Is a VIP - Count of Pictures") + stat_qq_line()
+plot3 <-ggplot(isavip, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5, col = "Blue") + labs(title = "Is a VIP - Profile visits") + stat_qq_line()
+plot4 <- ggplot(isavip, aes(sample = counts_kisses)) + stat_qq(size = 0.5, col = "Blue") + labs(title = "Is a VIP - Count of Kisses") + stat_qq_line()
+plot5 <- ggplot(isavip, aes(sample = distance)) + stat_qq(size = 0.5, col = "Blue") + labs(title = "Is a VIP - Distance") + stat_qq_line()
 ```
 
 ```{r fig.height = 10, fig.cap = "factor: isavip", warning = FALSE, echo = FALSE}
@@ -925,11 +927,11 @@ fig.1
 
 ```{r echo = FALSE}
 # factor is a vip
-plot6 <- ggplot(isnotavip, aes(sample = age)) + stat_qq(size = 0.5) + labs(title = "Is not a VIP - Age") + stat_qq_line()
-plot7 <- ggplot(isnotavip, aes(sample = counts_pictures)) + stat_qq(size = 0.5) + labs(title = "Is not a VIP - Count of Pictures") + stat_qq_line()
-plot8 <- ggplot(isnotavip, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5) + labs(title = "Is not a VIP - Profile visits") + stat_qq_line()
-plot9 <- ggplot(isnotavip, aes(sample = counts_kisses)) + stat_qq(size = 0.5) + labs(title = "Is not a VIP - Count of Kisses") + stat_qq_line()
-plot10 <- ggplot(isnotavip, aes(sample = distance)) + stat_qq(size = 0.5) + labs(title = "Is not a VIP - Distance") + stat_qq_line()
+plot6 <- ggplot(isnotavip, aes(sample = age)) + stat_qq(size = 0.5, col = "Blue") + labs(title = "Is not a VIP - Age") + stat_qq_line()
+plot7 <- ggplot(isnotavip, aes(sample = counts_pictures)) + stat_qq(size = 0.5, col = "Blue") + labs(title = "Is not a VIP - Count of Pictures") + stat_qq_line()
+plot8 <- ggplot(isnotavip, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5, col = "Blue") + labs(title = "Is not a VIP - Profile visits") + stat_qq_line()
+plot9 <- ggplot(isnotavip, aes(sample = counts_kisses)) + stat_qq(size = 0.5, col = "Blue") + labs(title = "Is not a VIP - Count of Kisses") + stat_qq_line()
+plot10 <- ggplot(isnotavip, aes(sample = distance)) + stat_qq(size = 0.5, col = "Blue") + labs(title = "Is not a VIP - Distance") + stat_qq_line()
 ```
 
 ```{r fig.height = 10, fig.cap = "factor: isnotavip", warning = FALSE, echo = FALSE}
@@ -939,11 +941,11 @@ fig.2
 
 ```{r warning = FALSE, echo = FALSE}
 # factor Switzerland
-plot11 <- ggplot(Switzerland, aes(sample = age)) + stat_qq(size = 0.5) + labs(title = "Switzerland - Age") + stat_qq_line()
-plot12 <- ggplot(Switzerland, aes(sample = counts_pictures)) + stat_qq(size = 0.5) + labs(title = "Switzerland - Count of Pictures") + stat_qq_line()
-plot13 <- ggplot(Switzerland, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5) + labs(title = "Switzerland - Profile visits") + stat_qq_line()
-plot14 <- ggplot(Switzerland, aes(sample = counts_kisses)) + stat_qq(size = 0.5) + labs(title = "Switzerland - Count of Kisses") + stat_qq_line()
-plot15 <- ggplot(Switzerland, aes(sample = distance)) + stat_qq(size = 0.5) + labs(title = "Switzerland - Distance") + stat_qq_line()
+plot11 <- ggplot(Switzerland, aes(sample = age)) + stat_qq(size = 0.5, col = "Green") + labs(title = "Switzerland - Age") + stat_qq_line()
+plot12 <- ggplot(Switzerland, aes(sample = counts_pictures)) + stat_qq(size = 0.5, col = "Green") + labs(title = "Switzerland - Count of Pictures") + stat_qq_line()
+plot13 <- ggplot(Switzerland, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5, col = "Green") + labs(title = "Switzerland - Profile visits") + stat_qq_line()
+plot14 <- ggplot(Switzerland, aes(sample = counts_kisses)) + stat_qq(size = 0.5, col = "Green") + labs(title = "Switzerland - Count of Kisses") + stat_qq_line()
+plot15 <- ggplot(Switzerland, aes(sample = distance)) + stat_qq(size = 0.5, col = "Green") + labs(title = "Switzerland - Distance") + stat_qq_line()
 ```
 
 ```{r fig.height = 10, fig.cap = "factor: Switzerland", warning = FALSE,  echo = FALSE}
@@ -953,11 +955,11 @@ fig.3
 
 ```{r warning = FALSE, echo = FALSE}
 # factor Germany
-plot16 <- ggplot(Germany, aes(sample = age)) + stat_qq(size = 0.5) + labs(title = "Germany - Age") + stat_qq_line()
-plot17 <- ggplot(Germany, aes(sample = counts_pictures)) + stat_qq(size = 0.5) + labs(title = "Germany - Count of Pictures") + stat_qq_line()
-plot18 <- ggplot(Germany, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5) + labs(title = "Germany - Profile visits") + stat_qq_line()
-plot19 <- ggplot(Germany, aes(sample = counts_kisses)) + stat_qq(size = 0.5) + labs(title = "Germany - Count of Kisses") + stat_qq_line()
-plot20 <-ggplot(Germany, aes(sample = distance)) + stat_qq(size = 0.5) + labs(title = "Germany - Distance") + stat_qq_line()
+plot16 <- ggplot(Germany, aes(sample = age)) + stat_qq(size = 0.5, col = "Orange") + labs(title = "Germany - Age") + stat_qq_line()
+plot17 <- ggplot(Germany, aes(sample = counts_pictures)) + stat_qq(size = 0.5, col = "Orange") + labs(title = "Germany - Count of Pictures") + stat_qq_line()
+plot18 <- ggplot(Germany, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5, col = "Orange") + labs(title = "Germany - Profile visits") + stat_qq_line()
+plot19 <- ggplot(Germany, aes(sample = counts_kisses)) + stat_qq(size = 0.5, col = "Orange") + labs(title = "Germany - Count of Kisses") + stat_qq_line()
+plot20 <-ggplot(Germany, aes(sample = distance)) + stat_qq(size = 0.5, col = "Orange") + labs(title = "Germany - Distance") + stat_qq_line()
 ```
 
 ```{r fig.height = 10, fig.cap = "factor: Germany", warning = FALSE, echo = FALSE}
@@ -967,11 +969,11 @@ fig.4
 
 ```{r warning = FALSE, echo = FALSE}
 # factor France
-plot21 <- ggplot(France, aes(sample = age)) + stat_qq(size = 0.5) + labs(title = "France - Age") + stat_qq_line()
-plot22 <- ggplot(France, aes(sample = counts_pictures)) + stat_qq(size = 0.5) + labs(title = "France - Count of Pictures") + stat_qq_line()
-plot23 <- ggplot(France, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5) + labs(title = "France - Profile visits") + stat_qq_line()
-plot24 <- ggplot(France, aes(sample = counts_kisses)) + stat_qq(size = 0.5) + labs(title = "France - Count of Kisses") + stat_qq_line()
-plot25 <- ggplot(France, aes(sample = distance)) + stat_qq(size = 0.5) + labs(title = "France - Distance") + stat_qq_line()
+plot21 <- ggplot(France, aes(sample = age)) + stat_qq(size = 0.5, col = "Pink") + labs(title = "France - Age") + stat_qq_line()
+plot22 <- ggplot(France, aes(sample = counts_pictures)) + stat_qq(size = 0.5, col = "Pink") + labs(title = "France - Count of Pictures") + stat_qq_line()
+plot23 <- ggplot(France, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5, col = "Pink") + labs(title = "France - Profile visits") + stat_qq_line()
+plot24 <- ggplot(France, aes(sample = counts_kisses)) + stat_qq(size = 0.5, col = "Pink") + labs(title = "France - Count of Kisses") + stat_qq_line()
+plot25 <- ggplot(France, aes(sample = distance)) + stat_qq(size = 0.5, col = "Pink") + labs(title = "France - Distance") + stat_qq_line()
 ```
 
 ```{r fig.height = 10, fig.cap = "factor: France", warning = FALSE, echo = FALSE}
@@ -981,11 +983,11 @@ fig.5
 
 ```{r warning = FALSE, echo = FALSE}
 # factor Italy
-plot26 <- ggplot(Italy, aes(sample = age)) + stat_qq(size = 0.5) + labs(title = "Italy - Age") + stat_qq_line()
-plot27 <- ggplot(Italy, aes(sample = counts_pictures)) + stat_qq(size = 0.5) + labs(title = "Italy - Count of Pictures") + stat_qq_line()
-plot28 <- ggplot(Italy, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5) + labs(title = "Italy - Profile visits") + stat_qq_line()
-plot29 <- ggplot(Italy, aes(sample = counts_kisses)) + stat_qq(size = 0.5) + labs(title = "Italy - Counts of Kisses") + stat_qq_line()
-plot30 <- ggplot(Italy, aes(sample = distance)) + stat_qq(size = 0.5) + labs(title = "Italy - Distance") + stat_qq_line()
+plot26 <- ggplot(Italy, aes(sample = age)) + stat_qq(size = 0.5, col = "Purple") + labs(title = "Italy - Age") + stat_qq_line()
+plot27 <- ggplot(Italy, aes(sample = counts_pictures)) + stat_qq(size = 0.5, col = "Purple") + labs(title = "Italy - Count of Pictures") + stat_qq_line()
+plot28 <- ggplot(Italy, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5, col = "Purple") + labs(title = "Italy - Profile visits") + stat_qq_line()
+plot29 <- ggplot(Italy, aes(sample = counts_kisses)) + stat_qq(size = 0.5, col = "Purple") + labs(title = "Italy - Counts of Kisses") + stat_qq_line()
+plot30 <- ggplot(Italy, aes(sample = distance)) + stat_qq(size = 0.5, col = "Purple") + labs(title = "Italy - Distance") + stat_qq_line()
 ```
 
 ```{r fig.height = 10, fig.cap = "factor: Italy", warning = FALSE, echo = FALSE}
@@ -995,17 +997,21 @@ fig.6
 
 ```{r warning = FALSE, echo = FALSE}
 # factor Other
-plot31 <- ggplot(Other, aes(sample = age)) + stat_qq(size = 0.5) + labs(title = "Other - Age") + stat_qq_line()
-plot32 <- ggplot(Other, aes(sample = counts_pictures)) + stat_qq(size = 0.5) + labs(title = "Other - Count of Pictures") + stat_qq_line()
-plot33 <- ggplot(Other, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5) + labs(title = "Other - Profile visits") + stat_qq_line()
-plot34 <- ggplot(Other, aes(sample = counts_kisses)) + stat_qq(size = 0.5) + labs(title = "Other - Counts of Kisses") + stat_qq_line()
-plot35 <- ggplot(Other, aes(sample = distance)) + stat_qq(size = 0.5) + labs(title = "Other - Distance") + stat_qq_line()
+plot31 <- ggplot(Other, aes(sample = age)) + stat_qq(size = 0.5, col = "Yellow") + labs(title = "Other - Age") + stat_qq_line()
+plot32 <- ggplot(Other, aes(sample = counts_pictures)) + stat_qq(size = 0.5, col = "Yellow") + labs(title = "Other - Count of Pictures") + stat_qq_line()
+plot33 <- ggplot(Other, aes(sample = counts_profileVisits)) + stat_qq(size = 0.5, col = "Yellow") + labs(title = "Other - Profile visits") + stat_qq_line()
+plot34 <- ggplot(Other, aes(sample = counts_kisses)) + stat_qq(size = 0.5, col = "Yellow") + labs(title = "Other - Counts of Kisses") + stat_qq_line()
+plot35 <- ggplot(Other, aes(sample = distance)) + stat_qq(size = 0.5, col = "Yellow") + labs(title = "Other - Distance") + stat_qq_line()
 ```
 
 ```{r fig.height = 10, fig.cap = "factor: Other", warning = FALSE, echo = FALSE}
 fig.7 <- ggarrange(plot31, plot32, plot33, plot34, plot35, nrow = 3, ncol = 2)
 fig.7
 ```
+\
+\
+All of the Q-Q plots support the quantitative analysis, the QQ points have points off the line in its tail which violate the assumption of normality.
+
 
 # Testing for class membership using Mahalanobis distance (isVip)
 
