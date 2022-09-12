@@ -779,9 +779,11 @@ Figure \@ref(fig:agecount2) shows the number of users by age. The number of user
 ```{r}
 plots <- vector('list', length(c(0,1)))
 
+library(dplyr)
+
 for (x in c(0,1)) {
   dating <- lovoo[c("counts_pictures", "counts_profileVisits", "counts_kisses", "country")]
-  dating<-subset(dating, country==x)
+  #dating<-subset(dating, country==x)
   pvals_v <- vector('list', nrow(dating))
   for (i in 1:nrow(dating)) {
     x.new <- dating[i,-4]
@@ -797,6 +799,7 @@ for (x in c(0,1)) {
   geom_vline(xintercept = 0.05, col="red") 
 }
 ggarrange(plotlist=plots,ncol = 2, nrow = 1)
+dating
 ```
 
 ```{r, echo=FALSE}
