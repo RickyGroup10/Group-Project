@@ -1,24 +1,54 @@
 ---
 title: "Dating App User Profiles' stats - Lovoo v3"
 author: "Group 10 - Lissa, Ricky, Max and Katrina"
-output: ioslides_presentation
+output: beamer_presentation
+
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+
 ```
 
 ## Group 10 Members
 
+::: columns
+
+:::: column
+![]("../../Images/JPG/lissa-harrop.jpg"){height=80px} \newline
+Lissa Harrop \newline
+harropliss@myvuw.ac.nz \newline
+\href{https://orcid.org/0000-0002-6761-7465}{\color{blue}ORCID: 0000-0002-6761-7465} \newline
+\newline
+![]("../../Images/JPG/Max_image.jpg"){height=80px} \newline
+Max Tan \newline
+tanmacs@myvuw.ac.nz \newline
+\href{https://orcid.org/0000-0001-9215-4311}{\color{blue}ORCID: 0000-0001-9215-4311} \newline
+::::
+
+:::: column
+
+![]("../../Images/JPG/Ricky.jpg"){height=80px} \newline
+Ricky Loo \newline
+loorick@myvuw.ac.nz \newline
+\href{https://orcid.org/0000-0002-4265-1085}{\color{blue}ORCID: 0000-0002-4265-1085} \newline
+\newline
+![]("../../Images/PNG/katrina_image2.png"){height=80px} \newline
+Katrina Watkins\newline
+watkinkatr@myvuw.ac.nz \newline
+\href{https://orcid.org/0000-0001-6614-2819}{\color{blue}ORCID: 0000-0001-6614-2819} \newline
+::::
+
+:::
+
+## Dating App User Profiles' stats - Lovoo v3 
+
+- A textual description of the data set; highlight your interest in this data set
 
 
-## Dating App User Profiles' stats - Lovoo v3 A textual description of the data set; highlight your interest in this data set
+## Visualisations
 
-
-
-## One or two visualisations that give your audience an idea of the data set
-
-
+- One or two visualisations that give your audience an idea of the data set
 
 
 ## Anything else you have found interesting in the data
@@ -31,6 +61,5 @@ knitr::opts_chunk$set(echo = FALSE)
 
 
 ## References (if needed)
-
 
 
