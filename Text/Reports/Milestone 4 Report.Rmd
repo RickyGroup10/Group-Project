@@ -837,9 +837,17 @@ for (x in c("France", "Germany", "Italy", "Other", "Switzerland")){
   geom_vline(xintercept = 0.05, col="red") + xlab("P-value obtained per obs") + ggtitle(x)
   y<-y+1
 }
+
 ggarrange(plotlist=plots,ncol = 3, nrow = 2)
-unique(dating$country)
+
+outlierpvals <- pvals_v
+outlierpvals <- data.frame(outlierpvals)
+outlierpvals <- outlierpvals[outlierpvals < 0.05]
+library("tidyr")
+outlierpvals_2 <- na.omit(outlierpvals)
+nrow(outlierpvals_2)
 ```
+In general, the p-value reflects the probability of seeing a Mahalanobis value as large or larger than the actual Mahalanobis value, assuming the vector of predictor values that produced that Mahalanobis value was sampled from a population with an ideal mean (i.e. equal to the vector of mean predictor variable values used to generate the Mahalanobis value). P-values close to 0 reflect high Mahalanobis distance values and are therefore very dissimilar to the ideal combination of predictor variables. P-values close to 1 reflect low Mahalanobis distances and are therefore very similar to the ideal combination of predictor variables. The closer the p-value is to 1, the more similar that combination of predictor values is to the ideal combination. There are 75 observations that have a p-value of less than our chosen significance level of 0.05. Those observations can be considered outliers.
 
 
 
