@@ -348,7 +348,6 @@ lovoo["country"][lovoo["country"] == 'SC'] <- 'Other'
 lovoo["country"][lovoo["country"] == 'TR'] <- 'Other'
 lovoo["country"][lovoo["country"] == 'UA'] <- 'Other'
 lovoo["country"][lovoo["country"] == 'US'] <- 'Other'
-unique(lovoo$country)
 
 # Setting country and isVip to be factors.
 lovoo$country <- as.factor(lovoo$country)
@@ -378,11 +377,11 @@ countrybar2 +
 
 There appears to be strong positive correlation between the number of profiles visits and the number of likes that a user receives. There is also positive correlation between the number of pictures a user has and the number of profile visits they receive, as well as the number of likes the user has. There is slight positive correlation between the age of the user and the distance between this user's city/location and the location of the user account that was used to fetch the data of the user. There appears to be no correlation between age and likes, profile visits and pictures, nor distance and likes, profile visits and pictures. This can been seen in figure \@ref(fig:correlationmatrix) and numerically in table \@ref(correlationmatrixnum), and supported by the pairs plots in figure \@ref(fig:pairsplot).
 
-Earlier we saw that there was significantly more non-Vip user's than Vip users (table \@ref(vipfreq)). In  shows that 3901 users are not Vip's while only 91 are Vip's. We can see in table \@ref(vipcountry) that Switzerland has the most Vip's, this is supported in figure \@ref(fig:barvipcountry).
+Earlier we saw that there was significantly more non-Vip user's than Vip users (table \@ref(vipfreq)). In  shows that 3901 users are not Vip's while only 91 are Vip's. We can see in table \@ref(vipcountry) that Switzerland has the most Vip's, this is supported in figure \@ref(fig:plotvip).
 
 We see that there is a high correlation (0.89) between profile visits and profile likes (table \@ref(correlationmatrixnum)). We see from figure \@ref(fig:scatterplot) that there is a positive relationship between profile visits and profile likes. We can also see there are several outliers that we should remove as they can be very influential to our data. After removing the outliers from figure \@ref(fig:scatterplot) we see the same positive relationship but the outlieing profiles are gone (figure \@ref(fig:scatterplot2)).
 
-We see that the number of users by age tends to increase in Germany and peak at 22 years old before decreasing. Where as in France and Switzerland they tend to start with a larger number of users at younger age and decrease as age increases. This can be seen in figure \@ref(fig:agecount).
+We see that the number of users by age tends to increase in Germany and peak at 22 years old before decreasing. Where as in France and Switzerland they tend to start with a larger number of users at younger age and decrease as age increases. This can be seen in figure \@ref(fig:plotage).
 
 ```{r correlationmatrix, fig.cap="Correlation Matrix", echo=FALSE, warning=FALSE}
 ggcorrplot(cor(lovoo[,1:5]),
@@ -411,17 +410,16 @@ colnames(newtab) <- c("isVip - No", "isVip - Yes")
 print(xtable(newtab, caption="Summary Statistics - isVip (or not) by country", label="vipcountry"), comment=FALSE,
             caption.placement="top", type="latex")
 ```
-# Reference isn't working!
 
-```{r barvipcountry, fig.cap='Count of users by country and Vip status ', echo=FALSE}
+```{r plotvip, fig.cap='Count of users by country and Vip status ', echo=FALSE}
 ggplot(lovoo) +
   geom_bar(aes(x = country, fill = isVip)) +
   ggtitle("Count of users by country and Vip status") +
   theme_tufte() +
   theme(plot.title=element_text(hjust=0.5))
 ```
-#fix size of plot! Reference isn't working
-```{r agecount, fig.cap='Number of users by age and country' ,echo=FALSE}
+
+```{r plotage, fig.cap='Number of users by age and country' ,echo=FALSE}
 ggplot(lovoo, aes(x=country)) +
   geom_bar(aes(fill=country)) + 
   ylab(label='Number of users') + 
@@ -461,7 +459,7 @@ abline(lm(lovoo2$counts_kisses ~ lovoo2$counts_profileVisits, data = lovoo2), co
 
 # Burning questions
 
-# Profile Visits, Like, Country and Vip
+## Profile Visits, Like, Country and Vip
 
 After our initial analysis we know that profile visits and profile likes are highly correlated. We want to know if the number of profile visits and likes varies from country. We are also interested to know if having Vip status in each country affects the number of profile visits and likes.
 
@@ -519,7 +517,6 @@ lovoo["country"][lovoo["country"] == 'SC'] <- 'Other'
 lovoo["country"][lovoo["country"] == 'TR'] <- 'Other'
 lovoo["country"][lovoo["country"] == 'UA'] <- 'Other'
 lovoo["country"][lovoo["country"] == 'US'] <- 'Other'
-unique(lovoo$country) 
 
 # Setting country and isVip to be factors.
 lovoo$country <- as.factor(lovoo$country)
@@ -533,8 +530,6 @@ ggplot2::scale_color_manual(values=c("green", "blue")) +
 ggplot2::theme(axis.text.x = element_text(angle=90, hjust=1))
 ```
 
-
-## Need to fix this plot!!!!!!!!!!!!!!!!!
 ```{r pairsplotcountry, fig.cap="Pairs plot by country",warning = FALSE, echo=FALSE}
 ggpairs(lovoo[,1:5],
 ggplot2::aes(col=lovoo$country, alpha=.5)) +
@@ -818,6 +813,57 @@ ggarrange(plotlist=plots,ncol = 2, nrow = 1)
 We will subset the data based on the country the profile is from, we will then go through each observation and check it against the data as if it were a new sample.
 
 ```{r mahadistCountry, fig.cap="Histograms of Mahalanobis Distance p-values", echo=FALSE, warning=FALSE}
+# Reading in the data
+lovoo <- read.csv("../../Data/CSV/lovoo_v3_users_api-results.csv")
+
+# Converting data to a data frame
+lovoo <- data.frame(lovoo) 
+
+# Selecting the columns that contain our variables
+lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", 
+                   "counts_kisses", "distance", "country", "isVip")]
+
+# Replacing the missing values in distance with the mean 207.23
+lovoo$distance[is.na(lovoo$distance)] <- 207.23
+
+# Replacing country codes with full names
+lovoo["country"][lovoo["country"] == 'CH'] <- 'Switzerland'
+lovoo["country"][lovoo["country"] == 'DE'] <- 'Germany'
+lovoo["country"][lovoo["country"] == 'FR'] <- 'France'
+lovoo["country"][lovoo["country"] == 'IT'] <- 'Italy'
+lovoo["country"][lovoo["country"] == 'AR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'AT'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'AU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BE'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CF'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CZ'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ES'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ET'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'GB'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'HU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ID'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'IN'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'JM'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LI'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'NL'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'PE'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'PH'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'RO'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'RU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'SC'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'TR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'UA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'US'] <- 'Other'
+
+# Setting country and isVip to be factors.
+lovoo$country <- as.factor(lovoo$country)
+lovoo$isVip <- as.factor(lovoo$isVip)
+
 plots <- vector('list', length(c("France", "Germany", "Italy", "Other", "Switzerland")))
 y<-1
 
@@ -846,8 +892,9 @@ outlierpvals <- pvals_v
 outlierpvals <- data.frame(outlierpvals)
 outlierpvals <- outlierpvals[outlierpvals < 0.05]
 outlierpvals_2 <- na.omit(outlierpvals)
-dim(data.frame(outlierpvals_2))[1]
+#dim(data.frame(outlierpvals_2))[1]
 ```
+
 In general, the p-value reflects the probability of seeing a Mahalanobis value as large or larger than the actual Mahalanobis value, assuming the vector of predictor values that produced that Mahalanobis value was sampled from a population with an ideal mean (i.e. equal to the vector of mean predictor variable values used to generate the Mahalanobis value). P-values close to 0 reflect high Mahalanobis distance values and are therefore very dissimilar to the ideal combination of predictor variables. P-values close to 1 reflect low Mahalanobis distances and are therefore very similar to the ideal combination of predictor variables. The closer the p-value is to 1, the more similar that combination of predictor values is to the ideal combination. There are 75 observations that have a p-value of less than our chosen alpha level of 0.05. Those observations can be considered outliers as they are too far from our ideal combination of predictor variables.
 
 
