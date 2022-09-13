@@ -845,7 +845,6 @@ ggarrange(plotlist=plots,ncol = 3, nrow = 2)
 outlierpvals <- pvals_v
 outlierpvals <- data.frame(outlierpvals)
 outlierpvals <- outlierpvals[outlierpvals < 0.05]
-library("tidyr")
 outlierpvals_2 <- na.omit(outlierpvals)
 dim(data.frame(outlierpvals_2))[1]
 ```
