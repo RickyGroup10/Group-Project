@@ -134,7 +134,10 @@ print(xtable(SumStat, caption="Summary Statistics - Numerical Variables",
 
 ## Anything else you have found interesting in the data
 
-
+- VIP users
+- Normal distribution of variables
+- Number of Countries
+- Mahalanobis Distance
 
 
 ## Your future steps
