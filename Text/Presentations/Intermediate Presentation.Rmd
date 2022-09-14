@@ -7,7 +7,9 @@ output: beamer_presentation
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
-
+require(xtable)
+require(ggplot2)
+require(ggthemes)
 ```
 
 ## Group 10 Members
@@ -43,13 +45,92 @@ watkinkatr@myvuw.ac.nz \newline
 
 ## Dating App User Profiles' stats - Lovoo v3 
 
+
+
 - A textual description of the data set; highlight your interest in this data set
 
 
 ## Visualisations
 
+```{r, echo=FALSE}
+# Reading in the data
+lovoo <- read.csv("../../Data/CSV/lovoo_v3_users_api-results.csv")
+
+# Converting data to a data frame
+lovoo <- data.frame(lovoo) 
+
+# Selecting the columns that contain our variables
+lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", 
+                   "counts_kisses", "distance", "country", "isVip")]
+
+# Replacing the missing values in distance with the mean 207.23
+lovoo$distance[is.na(lovoo$distance)] <- 207.23
+
+# Replacing variable names
+lovoo["country"][lovoo["country"] == 'CH'] <- 'Switzerland'
+lovoo["country"][lovoo["country"] == 'DE'] <- 'Germany'
+lovoo["country"][lovoo["country"] == 'FR'] <- 'France'
+lovoo["country"][lovoo["country"] == 'IT'] <- 'Italy'
+lovoo["country"][lovoo["country"] == 'AR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'AT'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'AU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BE'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CF'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CZ'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ES'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ET'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'GB'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'HU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ID'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'IN'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'JM'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LI'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'NL'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'PE'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'PH'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'RO'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'RU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'SC'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'TR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'UA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'US'] <- 'Other'
+
+# Setting country and isVip to be factors.
+lovoo$country <- as.factor(lovoo$country)
+lovoo$isVip <- as.factor(lovoo$isVip)
+```
+
+```{r, echo=FALSE}
+# creating summary statistics
+MySummary <- function(df){
+  (c(length(df), min(df), quantile(df, .25), median(df), quantile(df, .75),
+     max(df), IQR(df), sd(df), mean(df)))
+}
+```
+
+```{r results = 'asis', echo=FALSE}
+SumStat <- apply(lovoo[,1:5], MySummary, MARGIN=2)
+rownames(SumStat) <- c("sample size", "minimum", "first quartile", "median",
+                       "third quartile", "maximum", "IQR", 
+                       "standard deviation", "mean")
+
+print(xtable(SumStat, caption="Summary Statistics - Numerical Variables", 
+             label="SumStat"), comment=FALSE,
+            caption.placement="top", type="latex", scalebox=0.7)
+```
+
+
 - One or two visualisations that give your audience an idea of the data set
 
+
+## Visualisations (continued)
+
+- One or two visualisations that give your audience an idea of the data set
 
 ## Anything else you have found interesting in the data
 
