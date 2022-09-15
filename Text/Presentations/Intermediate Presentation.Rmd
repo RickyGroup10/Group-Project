@@ -10,6 +10,8 @@ knitr::opts_chunk$set(echo = FALSE)
 require(xtable)
 require(ggplot2)
 require(ggthemes)
+require(reshape2)
+require(gridExtra)
 ```
 
 ## Group 10 Members
@@ -45,12 +47,13 @@ watkinkatr@myvuw.ac.nz \newline
 
 ## Dating App User Profiles' stats - Lovoo v3 
 
+- What is Lovoo?
 
+- What is the Lovoo dataset?
 
-- A textual description of the data set; highlight your interest in this data set
+- Why did we choose the Lovoo dataset?
 
-
-## Visualisations
+## Visualisation - correlation matrix
 
 ```{r, echo=FALSE}
 # Reading in the data
@@ -106,44 +109,110 @@ lovoo$isVip <- as.factor(lovoo$isVip)
 ```
 
 ```{r, echo=FALSE}
-# creating summary statistics
-MySummary <- function(df){
-  (c(length(df), min(df), quantile(df, .25), median(df), quantile(df, .75),
-     max(df), IQR(df), sd(df), mean(df)))
-}
+cormat <- round(cor(lovoo[,1:5]),2)
+melted_cormat <- melt(cormat)
+ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-1,1), space = "Lab", 
+   name="Pearson\nCorrelation") +
+  theme_minimal()+ 
+ theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+    size = 12, hjust = 1))+
+ coord_fixed()+ 
+geom_text(aes(Var2, Var1, label = value), color = "black", size = 2.5)
 ```
 
-```{r results = 'asis', echo=FALSE}
-SumStat <- apply(lovoo[,1:5], MySummary, MARGIN=2)
-rownames(SumStat) <- c("sample size", "minimum", "first quartile", "median",
-                       "third quartile", "maximum", "IQR", 
-                       "standard deviation", "mean")
+## Visualisation - Profile Visits and Profile Likes
 
-print(xtable(SumStat, caption="Summary Statistics - Numerical Variables", 
-             label="SumStat"), comment=FALSE,
-            caption.placement="top", type="latex", scalebox=0.7)
+```{r}
+h1 <- ggplot(lovoo, aes(x=counts_profileVisits)) +
+  geom_histogram(bins=nclass.FD(unlist(lovoo$counts_profileVisits)),
+                 col='blue', fill='white') +
+  labs(x = 'Count Profile Visits',
+       y = 'Frequency')+
+  ggtitle("Count of Profile Visits") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_tufte() + 
+  theme(text=element_text(size=12, 
+        family="serif")) +
+  theme(plot.title=element_text(hjust=0.5))
+
+h2 <- ggplot(lovoo, aes(x=counts_kisses)) +
+  geom_histogram(bins=nclass.FD(unlist(lovoo$counts_kisses)),
+                 col='darkgreen', fill='white') +
+  labs(x = 'Count Profile Likes',
+       y = 'Frequency')+
+  ggtitle("Count of Profile Likes") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_tufte() + 
+  theme(text=element_text(size=12, 
+        family="serif")) +
+  theme(plot.title=element_text(hjust=0.5))
+
+Q1visits <- quantile(lovoo$counts_profileVisits, .25)
+Q3visits <- quantile(lovoo$counts_profileVisits, .75)
+Q1likes <- quantile(lovoo$counts_kisses, .25)
+Q3likes <- quantile(lovoo$counts_kisses, .75)
+IQRvisits <- IQR(lovoo$counts_profileVisits)
+IQRlikes <- IQR(lovoo$counts_kisses)
+lovoo <- subset(lovoo, lovoo$counts_profileVisits > (Q1visits - 1.5*IQRvisits) & lovoo$counts_profileVisits < (Q3visits + 1.5*IQRvisits))
+lovoo <- subset(lovoo, lovoo$counts_kisses > (Q1likes - 1.5*IQRlikes) & lovoo$counts_kisses < (Q3likes + 1.5*IQRlikes))
+#str(lovoo)
+
+h3 <- ggplot(lovoo, aes(x=counts_profileVisits)) +
+  geom_histogram(bins=nclass.FD(unlist(lovoo$counts_profileVisits)),
+                 col='blue', fill='white') +
+  labs(x = 'Count Profile Visits',
+       y = 'Frequency')+
+  ggtitle("Count of Profile Visits") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_tufte() + 
+  theme(text=element_text(size=12, 
+        family="serif")) +
+  theme(plot.title=element_text(hjust=0.5))
+
+h4 <- ggplot(lovoo, aes(x=counts_kisses)) +
+  geom_histogram(bins=nclass.FD(unlist(lovoo$counts_kisses)),
+                 col='darkgreen', fill='white') +
+  labs(x = 'Count Profile Likes',
+       y = 'Frequency')+
+  ggtitle("Count of Profile Likes") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_tufte() + 
+  theme(text=element_text(size=12, 
+        family="serif")) +
+  theme(plot.title=element_text(hjust=0.5))
+
+grid.arrange(h1, h2, h3, h4, nrow = 2)
 ```
 
-
-- One or two visualisations that give your audience an idea of the data set
-
-
-## Visualisations (continued)
-
-- One or two visualisations that give your audience an idea of the data set
-
-## Anything else you have found interesting in the data
+## Interesting facts
 
 - VIP users
+
 - Normal distribution of variables
+
 - Number of Countries
+
 - Mahalanobis Distance
 
+## Future steps
 
-## Your future steps
+- Explore whether Age has an impact purchasing Vip status in each country. With a focus on Switzerland as it has the largest number of users and Vips
+
+- It would be interesting to compare this dataset with a similar dataset for males (if available)
 
 
+## References
 
-## References (if needed)
+### Dataset
+Mabilama, Jeffrey Mvutu. 2020. \newline
+“Dating App User Profiles’ Stats - Lovoo V3.” 
+https://www.kaggle.com/datasets/jmmvutu/dating-app-lovoo-user-profiles?resource=download
 
 
+### License
+Creative Common. nd. \newline
+"Attribution 4.0 International (CC BY 4.0)"
+https://creativecommons.org/licenses/by/4.0/
