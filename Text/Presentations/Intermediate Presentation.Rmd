@@ -165,7 +165,7 @@ h3 <- ggplot(lovoo, aes(x=counts_profileVisits)) +
                  col='blue', fill='white') +
   labs(x = 'Count Profile Visits',
        y = 'Frequency')+
-  ggtitle("Count of Profile Visits") +
+  ggtitle("Count of Profile Visits - outliers removed") +
   theme(plot.title = element_text(hjust = 0.5)) +
   theme_tufte() + 
   theme(text=element_text(size=12, 
@@ -177,7 +177,7 @@ h4 <- ggplot(lovoo, aes(x=counts_kisses)) +
                  col='darkgreen', fill='white') +
   labs(x = 'Count Profile Likes',
        y = 'Frequency')+
-  ggtitle("Count of Profile Likes") +
+  ggtitle("Count of Profile Likes - outliers removed") +
   theme(plot.title = element_text(hjust = 0.5)) +
   theme_tufte() + 
   theme(text=element_text(size=12, 
@@ -199,7 +199,7 @@ grid.arrange(h1, h2, h3, h4, nrow = 2)
 
 ## Future steps
 
-- Explore whether Age has an impact on purchasing Vip status in each country. With a focus on Switzerland as it has the largest number of users and Vips
+- Look at normalizing  the data and performing additional tests
 
 - It would be interesting to compare this dataset with a similar dataset for males (if available)
 
