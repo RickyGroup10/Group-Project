@@ -199,7 +199,7 @@ grid.arrange(h1, h2, h3, h4, nrow = 2)
 
 ## Future steps
 
-- Explore whether Age has an impact purchasing Vip status in each country. With a focus on Switzerland as it has the largest number of users and Vips
+- Explore whether Age has an impact on purchasing Vip status in each country. With a focus on Switzerland as it has the largest number of users and Vips
 
 - It would be interesting to compare this dataset with a similar dataset for males (if available)
 
