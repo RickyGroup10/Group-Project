@@ -1,0 +1,126 @@
+---
+title: "pca"
+author: "Katrina  Watkins 300523883"
+date: "2022-09-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(ggplot2)
+require(ggthemes)
+require(extrafont)
+require(booktabs)
+require(GGally)
+require(ggExtra)
+require(xtable)
+require(moments)
+require(ggcorrplot)
+require(fitdistrplus)
+require(reshape2)
+require(ggpubr)
+require(dplyr)
+```
+
+```{r}
+lovoo <- read.csv("lovoo_v3_users_api-results.csv")
+lovoo <- data.frame(lovoo)
+
+# Making a new dataframe without the categorical variables
+table(sapply(lovoo, class))
+
+lovoo.n <- lovoo[, c("age", "counts_details", "counts_pictures", "counts_profileVisits", "counts_kisses", "counts_fans", "counts_g", "distance", "lang_count")]
+lovoo.n <- data.frame(lovoo.n)
+lovoo.n <- lovoo.n[!apply(is.na(lovoo.n), 1, sum) == 1,]
+# Principle Component Analysis
+ggcorrplot(cor(lovoo.n),
+           method="circle",
+           type = "lower",
+           lab=TRUE,
+           show.diag = TRUE)
+
+liPCA.lovoo <- prcomp(lovoo.n, center = TRUE, scale = TRUE)
+plot(liPCA.lovoo, type = "l")
+summary(liPCA.lovoo)
+```
+
+```{r}
+lovoo <- read.csv("lovoo_v3_users_api-results.csv")
+lovoo <- data.frame(lovoo)
+```
+
+```{r}
+lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", 
+                   "counts_kisses", "distance", "country", "isVip")]
+# Replacing the missing values in distance with the mean 207.23
+lovoo$distance[is.na(lovoo$distance)] <- 207.23
+
+lovoo["country"][lovoo["country"] == 'CH'] <- 'Switzerland'
+lovoo["country"][lovoo["country"] == 'DE'] <- 'Germany'
+
+# Replacing variable names
+lovoo <- transform(lovoo, 
+                    country = {x <- as.character(country)
+                          x[!x %in% c("Switzerland","Germany")] <- "other"
+                          factor(x)})
+
+lovoo$country <- as.factor(lovoo$country)
+lovoo$isVip <- as.factor(lovoo$isVip)
+
+
+
+
+```
+
+```{}
+```
+
+```{r}
+set.seed(1234567890, kind="Mersenne-Twister")
+
+ind <- sample(c("Tr", "Te"),
+nrow(lovoo),
+replace=TRUE,
+prob=c(.7, .3))
+
+# Explicitly split the data in "Train" and "Test"
+Train <- lovoo[ind=="Tr",]
+Test <- lovoo[ind=="Te",]
+LDA <- lda(country ~ age+counts_pictures+counts_profileVisits+counts_kisses+distance,
+data=Train)
+LDA
+```
+
+```{r}
+Pred <- predict(LDA)
+ldahist(data=Pred$x[,1], g=Train$country)
+ldahist(data=Pred$x[,2], g=Train$country)
+```
+
+```{r}
+# Enable the r-universe repo
+options(repos = c(
+    fawda123 = 'https://fawda123.r-universe.dev',
+    CRAN = 'https://cloud.r-project.org'))
+
+# Install ggord
+install.packages('ggord')
+```
+
+```{r}
+library(ggord)
+
+ggord(LDA, Train$country)
+
+```
+
+```{r}
+library(klaR)
+partimat(country~., data=Train, method="lda")
+```
+
+```{r}
+RealisticPredicted <- predict(LDA, Test)$class
+(RCM <- table(RealisticPredicted, Actual=Test$country))
+
+```
