@@ -1,0 +1,256 @@
+---
+title: "Dating App User Profiles' stats - Lovoo v3"
+author: "Group 10 - Lissa, Ricky, Max and Katrina"
+header-includes:
+  - \setbeamertemplate{footline}{\includegraphics[height=15px]{"../../Images/PNG/Hearts_final.png"}}
+
+output: beamer_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+require(xtable)
+require(ggplot2)
+require(ggthemes)
+require(reshape2)
+require(gridExtra)
+```
+
+## Group 10 Members
+
+::: columns
+
+:::: column
+![]("../../Images/JPG/lissa-harrop.jpg"){height=80px} \newline
+Lissa Harrop \newline
+harropliss@myvuw.ac.nz \newline
+\href{https://orcid.org/0000-0002-6761-7465}{\color{blue}ORCID: 0000-0002-6761-7465} \newline
+\newline
+![]("../../Images/JPG/Max_image.jpg"){height=80px} \newline
+Max Tan \newline
+tanmacs@myvuw.ac.nz \newline
+\href{https://orcid.org/0000-0001-9215-4311}{\color{blue}ORCID: 0000-0001-9215-4311} \newline
+::::
+
+:::: column
+
+![]("../../Images/JPG/Ricky.jpg"){height=80px} \newline
+Ricky Loo \newline
+loorick@myvuw.ac.nz \newline
+\href{https://orcid.org/0000-0002-4265-1085}{\color{blue}ORCID: 0000-0002-4265-1085} \newline
+\newline
+![]("../../Images/PNG/katrina_image2.png"){height=80px} \newline
+Katrina Watkins\newline
+watkinkatr@myvuw.ac.nz \newline
+\href{https://orcid.org/0000-0001-6614-2819}{\color{blue}ORCID: 0000-0001-6614-2819} \newline
+::::
+
+:::
+
+## Lovoo 
+
+- What is Lovoo?
+
+- What is the Lovoo dataset?
+
+## Correlation heatmap
+```{r, echo=FALSE}
+# Reading in the data
+lovoo <- read.csv("../../Data/CSV/lovoo_v3_users_api-results.csv")
+
+# Converting data to a data frame
+lovoo <- data.frame(lovoo) 
+
+# Selecting the columns that contain our variables
+lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", 
+                   "counts_kisses", "distance", "country", "isVip")]
+
+# Replacing the missing values in distance with the mean 207.23
+lovoo$distance[is.na(lovoo$distance)] <- 207.23
+
+# Replacing variable names
+lovoo["country"][lovoo["country"] == 'CH'] <- 'Switzerland'
+lovoo["country"][lovoo["country"] == 'DE'] <- 'Germany'
+lovoo["country"][lovoo["country"] == 'FR'] <- 'France'
+lovoo["country"][lovoo["country"] == 'IT'] <- 'Italy'
+lovoo["country"][lovoo["country"] == 'AR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'AT'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'AU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BE'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CF'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CZ'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ES'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ET'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'GB'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'HU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ID'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'IN'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'JM'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LI'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'NL'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'PE'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'PH'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'RO'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'RU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'SC'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'TR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'UA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'US'] <- 'Other'
+
+# Setting country and isVip to be factors.
+lovoo$country <- as.factor(lovoo$country)
+lovoo$isVip <- as.factor(lovoo$isVip)
+```
+
+```{r, echo=FALSE}
+cormat <- round(cor(lovoo[,1:5]),2)
+melted_cormat <- melt(cormat)
+ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-1,1), space = "Lab", 
+   name="Pearson\nCorrelation") +
+  theme_minimal()+ 
+ theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+    size = 12, hjust = 1))+
+ coord_fixed()+ 
+geom_text(aes(Var2, Var1, label = value), color = "black", size = 2.5)
+```
+
+## Profile Visits and Profile Likes
+
+```{r}
+h1 <- ggplot(lovoo, aes(x=counts_profileVisits)) +
+  geom_histogram(bins=nclass.FD(unlist(lovoo$counts_profileVisits)),
+                 col='blue', fill='white') +
+  labs(x = 'Count Profile Visits',
+       y = 'Frequency')+
+  ggtitle("Count of Profile Visits") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_tufte() + 
+  theme(text=element_text(size=12, 
+        family="serif")) +
+  theme(plot.title=element_text(hjust=0.5))
+
+h2 <- ggplot(lovoo, aes(x=counts_kisses)) +
+  geom_histogram(bins=nclass.FD(unlist(lovoo$counts_kisses)),
+                 col='darkgreen', fill='white') +
+  labs(x = 'Count Profile Likes',
+       y = 'Frequency')+
+  ggtitle("Count of Profile Likes") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_tufte() + 
+  theme(text=element_text(size=12, 
+        family="serif")) +
+  theme(plot.title=element_text(hjust=0.5))
+
+Q1visits <- quantile(lovoo$counts_profileVisits, .25)
+Q3visits <- quantile(lovoo$counts_profileVisits, .75)
+Q1likes <- quantile(lovoo$counts_kisses, .25)
+Q3likes <- quantile(lovoo$counts_kisses, .75)
+IQRvisits <- IQR(lovoo$counts_profileVisits)
+IQRlikes <- IQR(lovoo$counts_kisses)
+lovoo <- subset(lovoo, lovoo$counts_profileVisits > (Q1visits - 1.5*IQRvisits) & lovoo$counts_profileVisits < (Q3visits + 1.5*IQRvisits))
+lovoo <- subset(lovoo, lovoo$counts_kisses > (Q1likes - 1.5*IQRlikes) & lovoo$counts_kisses < (Q3likes + 1.5*IQRlikes))
+#str(lovoo)
+
+h3 <- ggplot(lovoo, aes(x=counts_profileVisits)) +
+  geom_histogram(bins=nclass.FD(unlist(lovoo$counts_profileVisits)),
+                 col='blue', fill='white') +
+  labs(x = 'Count Profile Visits',
+       y = 'Frequency')+
+  ggtitle("Count of Profile Visits - outliers removed") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_tufte() + 
+  theme(text=element_text(size=12, 
+        family="serif")) +
+  theme(plot.title=element_text(hjust=0.5))
+
+h4 <- ggplot(lovoo, aes(x=counts_kisses)) +
+  geom_histogram(bins=nclass.FD(unlist(lovoo$counts_kisses)),
+                 col='darkgreen', fill='white') +
+  labs(x = 'Count Profile Likes',
+       y = 'Frequency')+
+  ggtitle("Count of Profile Likes - outliers removed") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_tufte() + 
+  theme(text=element_text(size=12, 
+        family="serif")) +
+  theme(plot.title=element_text(hjust=0.5))
+
+grid.arrange(h1, h2, h3, h4, nrow = 2)
+```
+
+## Cook's Distance
+
+```{r}
+lovoo <- read.csv("../../Data/CSV/lovoo_v3_users_api-results.csv")
+
+lm1 <- lm(counts_kisses ~ age, data = lovoo)
+lm2 <- lm(counts_kisses ~ counts_pictures, data = lovoo)
+lm3 <- lm(counts_kisses ~ counts_profileVisits, data = lovoo)
+lm4 <- lm(counts_kisses ~ distance, data = lovoo)
+par(mfrow=c(2,2))
+plot(lm1, 1)
+plot(lm2, 1)
+plot(lm3, 1)
+plot(lm4, 1)
+```
+
+## Leading Question
+
+"What combination of features lead to more likes and a better dating app experience?"
+
+## Introduction to LDA
+
+-	Why and how we are using LDA
+
+![]("../../Images/PNG/lda_pairs.png")
+
+## Conducting LDA
+
+![]("../../Images/PNG/lda_mean.png")
+
+## LDA Results
+
+![]("../../Images/PNG/lda_hist.png")
+
+## LDA Results continued
+
+![]("../../Images/PNG/lda_biplot.png")
+
+## Using Reduced Dimension for Classification
+
+-	Accuracy: 0.53
+
+![]("../../Images/PNG/lda_predact.png")
+
+## Problems we encounted
+
+- Our data was not normal
+- A large number of outliers
+- No linear separation between groups
+- Failed most of our tests
+
+## Conclusion
+
+\centering
+Love is unpredictable!
+
+
+## References
+
+### Dataset
+Mabilama, Jeffrey Mvutu. 2020. \newline
+“Dating App User Profiles’ Stats - Lovoo V3.” 
+https://www.kaggle.com/datasets/jmmvutu/dating-app-lovoo-user-profiles?resource=download
+
+### License
+Creative Common. nd. \newline
+"Attribution 4.0 International (CC BY 4.0)"
+https://creativecommons.org/licenses/by/4.0/
