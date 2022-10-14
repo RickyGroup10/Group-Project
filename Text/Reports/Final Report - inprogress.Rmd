@@ -33,12 +33,161 @@ require(reshape2)
 #require(farff)
 require(ggpubr)
 require(dplyr)
+require(caret)
+require(stringr)
+require(ggord)
+require(HDtest)
+require(MASS)
+require(klaR)
 ```
 
 # Introduction
 
 
 
+
+# LDA
+
+## Methodology
+
+We used linear discriminant analysis on the standardised and outlier removed data including all variables. We wanted to see if we would be able to predict whether someone would have a high chance of finding a match on the dating application, Lovoo. We also grouped the observations into whether they had a normal chance of a match or a very low chance, giving us three chance groups total. We used the count of kisses (likes) as the indicator for the groups; higher than the third quantile (0.4) is classed as highly likely, and lower than the first quantile (0.23) is classed as unlikely. There is an uneven proportion seen between the three classes as seen in the lower right of the group-coloured pairs plot (figure \@ref(fig:LDApairs)). We used the count of kisses as our group indication as we believe that the more likes you get on your profile can equate to more matches, therefore giving the profile user a higher chance of a successful dating app outcome (i.e., a relationship). After creating these groups, we removed the count of kisses from our analysis and classification attempt.
+
+Looking at the pairs plot again (figure \@ref(fig:LDApairs)) we can that there is some separation between groups that we can see visually (especially the highly likely class breaking away from the rest in the count of visits) but not much. In the univariate plots we can see that the data is not all normally distributed even after standardisation. Please note that country has been reduced to three levels instead of five for easy visualisation and analysis.
+
+## Results
+
+When conducting the linear discriminant analysis, we used the total five measures. We split into test and train sets randomly with a split of 80/20. From the group means output in table \@ref(LDAmeans), we can see that photo count and visits count have the highest influence on our predetermined groups, this confirms what we discovered about visits being correlated with kisses and therefore our dating chance groups. There is also a difference seen in Switzerland, with that country showing that it has a higher influence on the unlikely dating chance group compared to the other two factors.
+
+The scaling coefficients in table \@ref(LDAcoef) show that the first linear discriminant is largely explained by the feature count of visits (as expected). The proportion of trace (between-class variance) of the first linear discriminant is 94% and the second is 6%. This informs the separability of the training data into the three classes by each linear discriminant.
+
+When applying our analysis results using the predict function, we can plot the predicted score histograms. There was complete overlap in histograms between all groups in LD1 and LD2 meaning that neither of the discriminates could separate each group from each other, which is a bad outcome for our classification goal. Presented in figure \@ref(fig:LDAhist) is the predicted score histogram of LD1. There is complete overlap of all the groups in the biplot presented in figure \@ref(fig:LDAbiplot). From this we have gone back and tested a reduced the number of measures in the analysis to just count of photos, visits, and country. The results were similar so we continued to investigate the full model. Once again, we can see the large affect of visits on the model from the magnitude of the vector showing more discrimination between groups.
+
+## Conclusion
+
+When analysing the predicted vs observed classification table (table \@ref(RCM)) using the test data we set aside earlier we can see that the reported accuracy using LDA as a classification technique is 56% (with the biased optimistic accuracy on the training set matching this score). The classifier over classifies the dating app users as being in the normal chance group, meaning that there might not be any predictors included in the model that can be defined as outstanding dating profile features worthy of more matches.
+
+This poor result maybe be due to the data failing the Box's M-test for Homogeneity of Covariance Matrices with a p-value of $2.2x10^{-16}$ and the classes being imbalanced. From these results, we applied quadratic discriminant analysis as this technique works better for data that fails the Box' M test. We did not see an improvement in classification accuracy with QDA achieving the same score of 56% on the test set. The results can be seen in table \@ref(QDAtab).
+
+```{r createData, echo=FALSE}
+lovoo <- read.csv("lovoo_v3_users_api-results.csv")
+lovoo <- data.frame(lovoo)
+
+lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", 
+                   "counts_kisses", "distance", "country", "isVip")]
+# Replacing the missing values in distance with the mean 207.23
+lovoo$distance[is.na(lovoo$distance)] <- 207.23
+
+lovoo_standard <- as.data.frame(scale(lovoo[2:5]))
+
+
+colnames(lovoo_standard) <- c("standard_pics", "standard_visits", "standard_kisses",
+                              "standard_distance")
+
+z_scores <- as.data.frame(sapply(lovoo_standard[1:4], function(lovoo_standard) (abs(lovoo_standard-mean(lovoo_standard))/sd(lovoo_standard))))
+
+z_scores$isVip <- lovoo$isVip
+z_scores$country <- lovoo$country
+z_scores$age <- lovoo$age
+
+colnames(z_scores) <- c("standard_pics", "standard_visits", "standard_kisses",
+                              "standard_distance", "isVip", "country", 'age')
+
+no_outliers <- z_scores[!rowSums(z_scores[1:4]>3), ]
+
+no_outliers["country"][no_outliers["country"] == 'CH'] <- 'Switzerland'
+no_outliers["country"][no_outliers["country"] == 'DE'] <- 'Germany'
+
+# Replacing variable names
+no_outliers <- transform(no_outliers, 
+                    country = {x <- as.character(country)
+                          x[!x %in% c("Switzerland","Germany")] <- "other"
+                          factor(x)})
+
+no_outliers$country <- as.factor(no_outliers$country)
+no_outliers$isVip <- as.factor(no_outliers$isVip)
+
+q1<-quantile(no_outliers$standard_kisses, probs = c(0.25))
+q3<-quantile(no_outliers$standard_kisses, probs = c(0.75))
+
+binned <- no_outliers %>% mutate(Group =
+                                   case_when(standard_kisses <= q1 ~ "Unlikely", 
+                                             standard_kisses < q3 ~ "Normal",
+                                             standard_kisses >= q3 ~ "Highly_likely")
+)
+
+binned$Group<-as.factor(binned$Group)
+
+binned = subset(binned, select = -c(standard_kisses))
+```
+
+```{r LDApairs, message=FALSE, echo=FALSE, fig.cap="Chance group-coloured pairs plot for LDA"}
+ggpairs(binned, aes(alpha=.5, color=Group)) +
+  theme_pander() +
+  theme(text=element_text(family="serif"))
+```
+
+```{r LDAmodelOutput, echo=FALSE}
+set.seed(300521444, kind="Mersenne-Twister")
+
+ind <- sample(c("Tr", "Te"),
+nrow(binned),
+replace=TRUE,
+prob=c(.8, .2))
+
+# Explicitly split the data in "Train" and "Test"
+Train <- binned[ind=="Tr",]
+Test <- binned[ind=="Te",]
+LDA <- lda(Group ~ .,
+data=Train)
+```
+
+```{r ldat4, results = 'asis', echo=FALSE, message=FALSE, warning=FALSE}
+LDAmeans<-LDA$means
+
+row.names(LDAmeans) = str_wrap(row.names(LDAmeans), width=50)
+
+print(xtable(LDAmeans, caption='Group means of Linear discriminate analysis', label='LDAmeans', align=c('p{1in}',rep('|c', ncol(LDAmeans)))),scalebox = 0.75, caption.placement="top", type="latex", comment=FALSE)
+
+#print(xtable(LDAmeans, caption="Group means of Linear discriminate analysis", 
+#             label="LDAmeans"), comment=FALSE, 
+#            caption.placement="top", type="latex")
+```
+
+```{r ldat3, results = 'asis', echo=FALSE}
+LDAcoef<-LDA$scaling
+print(xtable(LDAcoef, caption="Scaling coeficients of Linear discriminate analysis", 
+             label="LDAcoef"), comment=FALSE,
+            caption.placement="top", type="latex")
+```
+
+```{r LDAhist, echo=FALSE, fig.cap="Predicted score histograms for LD1"}
+Pred <- predict(LDA)
+ldahist(data=Pred$x[,1], g=Train$Group)
+```
+
+```{r LDAbiplot, echo=FALSE, fig.cap="Linear discriminant biplot"}
+ggord(LDA, Train$Group)
+```
+
+```{r ldat1, results = 'asis', echo=FALSE}
+RealisticPredicted <- predict(LDA, Test)$class
+RCM <- table(RealisticPredicted, Actual=Test$Group)
+
+print(xtable(RCM, caption="Realistic predicted LDA classification", 
+             label="RCM"), comment=FALSE,
+            caption.placement="top", type="latex")
+```
+
+```{r ldat2, results = 'asis', echo=FALSE}
+qda <- qda(Group~., data = Train)
+qda.predict <- caret::train(Group~., method = "qda", data = Train)
+cm<-confusionMatrix(Test$Group, predict(qda.predict, Test))
+QDAtab <- as.table(cm)
+
+print(xtable(QDAtab, caption="Realistic predicted QDA classification", 
+             label="QDAtab"), comment=FALSE,
+            caption.placement="top", type="latex")
+```
 
 # References
 
