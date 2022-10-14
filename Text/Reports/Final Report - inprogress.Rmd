@@ -1,0 +1,44 @@
+---
+title: "A look at dating app user profile statistics"
+author: "Lissa Harrop, Katrina Watkins, Ricky Loo and Max Tan"
+date: "October 2022"
+classoption: 12pt
+  
+header-includes:
+  - \usepackage{newpxtext,eulerpx}
+  - \usepackage{bm,bbm}
+  - \usepackage{float}
+  - \floatplacement{figure}{H}
+
+output: bookdown::pdf_document2
+
+link-citations: yes
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(300521444, kind="Mersenne-Twister") #Mixture of all our ID numbers
+require(ggplot2)
+require(ggthemes)
+require(extrafont)
+require(booktabs)
+require(GGally)
+require(ggExtra)
+require(xtable)
+require(moments)
+require(ggcorrplot)
+require(fitdistrplus)
+require(reshape2)
+#require(farff)
+require(ggpubr)
+require(dplyr)
+```
+
+# Introduction
+
+
+
+
+# References
+
