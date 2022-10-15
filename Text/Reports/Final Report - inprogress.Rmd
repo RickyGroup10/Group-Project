@@ -65,7 +65,10 @@ Why we chose to do CA, PCA and LDA
 
 # EDA
 
+## Results
+
 The exploratory data analysis (EDA) started with a univariate analysis of our seven variables. 
+
 Looking at the variable age we discovered that the median age of a user on the Lovoo dating app is 22 years old, with the youngest users being 18 years old and the oldest users being 28 years old. With approximately 75% of users being aged 20 to 24 years.
 
 The median number of pictures a user has on their profile is 4, however there are some users that have no pictures and others that have up to 30 pictures. The bulk of users tend to have less than 10 profile pictures on their account, with a small number of users having between 11 and 30 profile pictures.
@@ -82,13 +85,80 @@ Of the 3992 users 91 of them have purchased VIP leaving 3901 users that have not
 
 From these results we can see that our data are not normally distributed, heavily skewed and had several outliers that were influencing our results.
 
+```{r, echo=FALSE}
+# Reading in the data
+lovoo <- read.csv("../../Data/CSV/lovoo_v3_users_api-results.csv")
+
+# Converting data to a data frame
+lovoo <- data.frame(lovoo) 
+
+# Selecting the columns that contain our variables
+lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", 
+                   "counts_kisses", "distance", "country", "isVip")]
+
+# Replacing the missing values in distance with the mean 207.23
+lovoo$distance[is.na(lovoo$distance)] <- 207.23
+
+# Replacing variable names
+lovoo["country"][lovoo["country"] == 'CH'] <- 'Switzerland'
+lovoo["country"][lovoo["country"] == 'DE'] <- 'Germany'
+lovoo["country"][lovoo["country"] == 'FR'] <- 'France'
+lovoo["country"][lovoo["country"] == 'IT'] <- 'Italy'
+lovoo["country"][lovoo["country"] == 'AR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'AT'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'AU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BE'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'BR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CF'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'CZ'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ES'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ET'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'GB'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'HU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'ID'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'IN'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'JM'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LI'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'LU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'NL'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'PE'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'PH'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'RO'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'RU'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'SC'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'TR'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'UA'] <- 'Other'
+lovoo["country"][lovoo["country"] == 'US'] <- 'Other'
+
+# Setting country and isVip to be factors.
+lovoo$country <- as.factor(lovoo$country)
+lovoo$isVip <- as.factor(lovoo$isVip)
+```
+
+
 # <<Example plot>>
 
 Our EDA then looked at bivariate and multivariate analysis in varying combinations of the seven variables. 
 
-We found that there is a strong positive correlation (0.89) between the number of profiles visits and the number of likes that a user receives. There is also a positive correlation (0.42) between the number of pictures a user has and the number of profile visits they receive and a positive correlation (0.37) between the number of pictures a user has and the number of likes they receive. There is a slight positive correlation (0.13) between the age of the user and the distance between this user’s city/location and the location of the user account that was used to fetch the data of the user. There appears to be no correlation between age and likes, profile visits and pictures, nor distance and likes, profile visits and pictures. This can be seen in <<ref heatmap>>.
+We found that there is a strong positive correlation (0.89) between the number of profiles visits and the number of likes that a user receives. There is also a positive correlation (0.42) between the number of pictures a user has and the number of profile visits they receive and a positive correlation (0.37) between the number of pictures a user has and the number of likes they receive. There is a slight positive correlation (0.13) between the age of the user and the distance between this user’s city/location and the location of the user account that was used to fetch the data of the user. There appears to be no correlation between age and likes, profile visits and pictures, nor distance and likes, profile visits and pictures. This can be seen in the heatmap in figure \@ref(fig:heatmap1).
 
-# <<Heatmap plot>>
+```{r heatmap1, echo=FALSE}
+cormat <- round(cor(lovoo[,1:5]),2)
+melted_cormat <- melt(cormat)
+ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-1,1), space = "Lab", 
+   name="Pearson\nCorrelation") +
+  theme_minimal()+ 
+ theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+    size = 12, hjust = 1))+
+ coord_fixed()+ 
+geom_text(aes(Var2, Var1, label = value), color = "black", size = 2.5)
+```
 
 In the univariate analysis we saw that 3901 users are not Vip’s while only 91 are Vip’s. When comparing VIP status with country we saw that Switzerland has the largest number of users with VIP status.
 
@@ -100,7 +170,7 @@ When looking at the number of users by age and country we saw that the number of
 
 We used linear discriminant analysis on the standardised and outlier removed data including all variables. We wanted to see if we would be able to predict whether someone would have a high chance of finding a match on the dating application, Lovoo. We also grouped the observations into whether they had a normal chance of a match or a very low chance, giving us three chance groups total. We used the count of kisses (likes) as the indicator for the groups; higher than the third quantile (0.4) is classed as highly likely, and lower than the first quantile (0.23) is classed as unlikely. There is an uneven proportion seen between the three classes as seen in the lower right of the group-coloured pairs plot (figure \@ref(fig:LDApairs)). We used the count of kisses as our group indication as we believe that the more likes you get on your profile can equate to more matches, therefore giving the profile user a higher chance of a successful dating app outcome (i.e., a relationship). After creating these groups, we removed the count of kisses from our analysis and classification attempt.
 
-Looking at the pairs plot again (figure \@ref(fig:LDApairs)) we can that there is some separation between groups that we can see visually (especially the highly likely class breaking away from the rest in the count of visits) but not much. In the univariate plots we can see that the data is not all normally distributed even after standardisation. Please note that country has been reduced to three levels instead of five for easy visualisation and analysis.
+Looking at the pairs plot again (figure \@ref(fig:LDApairs)) we can see that there is some separation between groups that we can see visually (especially the highly likely class breaking away from the rest in the count of visits) but not much. In the univariate plots we can see that the data is not all normally distributed even after standardisation. Please note that country has been reduced to three levels instead of five for easy visualisation and analysis.
 
 ## Results
 
@@ -108,7 +178,7 @@ When conducting the linear discriminant analysis, we used the total five measure
 
 The scaling coefficients in table \@ref(LDAcoef) show that the first linear discriminant is largely explained by the feature count of visits (as expected). The proportion of trace (between-class variance) of the first linear discriminant is 94% and the second is 6%. This informs the separability of the training data into the three classes by each linear discriminant.
 
-When applying our analysis results using the predict function, we can plot the predicted score histograms. There was complete overlap in histograms between all groups in LD1 and LD2 meaning that neither of the discriminates could separate each group from each other, which is a bad outcome for our classification goal. Presented in figure \@ref(fig:LDAhist) is the predicted score histogram of LD1. There is complete overlap of all the groups in the biplot presented in figure \@ref(fig:LDAbiplot). From this we have gone back and tested a reduced the number of measures in the analysis to just count of photos, visits, and country. The results were similar so we continued to investigate the full model. Once again, we can see the large affect of visits on the model from the magnitude of the vector showing more discrimination between groups.
+When applying our analysis results using the predict function, we can plot the predicted score histograms. There was complete overlap in histograms between all groups in LD1 and LD2 meaning that neither of the discriminates could separate each group from each other, which is a bad outcome for our classification goal. Presented in figure \@ref(fig:LDAhist) is the predicted score histogram of LD1. There is a complete overlap of all the groups in the biplot presented in figure \@ref(fig:LDAbiplot). From this we have gone back and tested a reduced number of measures in the analysis to just count of photos, visits, and country. The results were similar so we continued to investigate the full model. Once again, we can see the large affect of visits on the model from the magnitude of the vector showing more discrimination between groups.
 
 ## Conclusion
 
