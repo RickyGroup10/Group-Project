@@ -56,7 +56,7 @@ Based on the data we have available we would like to know the following…..
 
 During our exploratory data analysis it was discovered that there were 46 missing values in the variable distance. These have been replaced by the mean of the distance column (207.23). This ensured that we had a full dataset with a sample size of 3992 for all seven variables.
 
-It was also discovered that our data were not normally distributed (and verified by Shapiro-Wilk normality tests), were heavily skewed and had several outliers that were influencing our results. As a result of this we chose to standardise our numerical variables and remove the outliers. We standardised the data by XXXX and removed the outliers by XXXX. 
+It was also discovered that our data were not normally distributed (and verified by Shapiro-Wilk normality tests), were heavily skewed and had several outliers that were influencing our results. As a result of this we chose to standardise our numerical variables and remove the outliers. We standardised the data through z-score standardisation and removed the outliers by removing any rows of data that had a value greater than 3 (this is three standard deviations). As a result of this our dataset was reduced to a sample size of 3816 users. 
 
 For the categorical variable country we saw that 28 of the 32 countries have 20 or less users with 13 of these having only 1 user. As a result we decided to group all countries that had 20 users or less into one new category called “other”. This gave us 5 countries – Italy, France, Germany, Switzerland and Other.
 
