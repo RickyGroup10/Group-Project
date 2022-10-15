@@ -43,8 +43,56 @@ require(klaR)
 
 # Introduction
 
+This study looks at Dating App User Profiles' stats from the Lovoo dating app. The dataset is available on kaggle (@Lovoov3) and the license to use the dataset is available on creativecommons (@License).
 
+Lovoo, is a European dating platform that allows individuals to chat to each other before a mutuality of attraction, unlike other dating platforms that emphasize this before allowing any two people to get in touch and chat. The Lovoo dataset contains profile information on 3992 females that was obtained during April and May of 2015. The dataset contains 22 numerical and 20 categorical variables. We found that there was no information provided about what some of the variables mean. Several of the variables are unique identifiers such as name, userId and pictureId, among others. There are also many variables that are binary classifiers.
 
+This study focuses on seven variables: age, counts_pictures, counts_profileVisits, counts_kisses, distance, country and isVip. Where **Age** is the users age, **counts_pictures** is the number of pictures on the user's profile, **counts_profileVisits** is the number of clicks on this user (to see his/her full profile) from other user accounts, **counts_kisses** is the number of unique user accounts that "liked" (called "kiss" on the platform) this user account, **distance** is the distance between this user's city/location and the location of the user account that was used to fetch the data of this user, **country** is the user's country, **isVip** is a 0 if the user is not a VIP and is 1 if the user is VIP. It was possible to buy a VIP status with real money. This status came with benefits.
+
+# NEED TO ADD WHAT WE WANT TO ACHIEVE
+Based on the data we have available we would like to know the following…..
+
+# Overall Methodology
+
+During our exploratory data analysis it was discovered that there were 46 missing values in the variable distance. These have been replaced by the mean of the distance column (207.23). This ensured that we had a full dataset with a sample size of 3992 for all seven variables.
+
+It was also discovered that our data were not normally distributed (and verified by Shapiro-Wilk normality tests), were heavily skewed and had several outliers that were influencing our results. As a result of this we chose to standardise our numerical variables and remove the outliers. We standardised the data by XXXX and removed the outliers by XXXX. 
+
+For the categorical variable country we saw that 28 of the 32 countries have 20 or less users with 13 of these having only 1 user. As a result we decided to group all countries that had 20 users or less into one new category called “other”. This gave us 5 countries – Italy, France, Germany, Switzerland and Other.
+
+# NEED TO WRITE WHY WE CHOSE EACH OF THESE
+Why we chose to do CA, PCA and LDA
+
+# EDA
+
+The exploratory data analysis (EDA) started with a univariate analysis of our seven variables. 
+Looking at the variable age we discovered that the median age of a user on the Lovoo dating app is 22 years old, with the youngest users being 18 years old and the oldest users being 28 years old. With approximately 75% of users being aged 20 to 24 years.
+
+The median number of pictures a user has on their profile is 4, however there are some users that have no pictures and others that have up to 30 pictures. The bulk of users tend to have less than 10 profile pictures on their account, with a small number of users having between 11 and 30 profile pictures.
+
+The median number of clicks on a user’s profile to see his/her full profile (from another user's account) is 1222, with some users having no visits to their profile and some having up to 164425 visits. We discovered that the mean number of profile visits is roughly at the 75th percentile. 25% of users tend to have extremely large numbers of profile visits.
+
+The median number of unique user accounts that “liked” a user’s account is 44, with the number of likes ranging from 0 to 9288. Again, we saw that the median was close to the 75th percentile and there were several users with a large number of likes.
+
+The median distance between this user's city/location and the location of the user account that was used to fetch the data is 173, with the range being from 0 to 6918. No units of measurement are indicated in the dataset.
+
+The users are from 32 different countries ranging from 1 user to 1657 users with Italy, France, Germany and Switzerland being the countries with the most users. As mentioned previously 28 of the 32 countries have 20 or less users with 13 of these only having 1 user. As a result we decided to group all countries that had 20 users or less into one new category called “other”. This gave us 5 countries – Italy with 138 users, France with 646 users, Germany with 1468 users, Switzerland with 1657 users and Other with 83 users.
+
+Of the 3992 users 91 of them have purchased VIP leaving 3901 users that have not purchased VIP.
+
+From these results we can see that our data are not normally distributed, heavily skewed and had several outliers that were influencing our results.
+
+# <<Example plot>>
+
+Our EDA then looked at bivariate and multivariate analysis in varying combinations of the seven variables. 
+
+We found that there is a strong positive correlation (0.89) between the number of profiles visits and the number of likes that a user receives. There is also a positive correlation (0.42) between the number of pictures a user has and the number of profile visits they receive and a positive correlation (0.37) between the number of pictures a user has and the number of likes they receive. There is a slight positive correlation (0.13) between the age of the user and the distance between this user’s city/location and the location of the user account that was used to fetch the data of the user. There appears to be no correlation between age and likes, profile visits and pictures, nor distance and likes, profile visits and pictures. This can be seen in <<ref heatmap>>.
+
+# <<Heatmap plot>>
+
+In the univariate analysis we saw that 3901 users are not Vip’s while only 91 are Vip’s. When comparing VIP status with country we saw that Switzerland has the largest number of users with VIP status.
+
+When looking at the number of users by age and country we saw that the number of users by age tends to increase in Germany and peak at 22 years old before decreasing. Whereas in France and Switzerland they tend to start with a larger number of users at a younger age and decrease as age increases.
 
 # LDA
 
