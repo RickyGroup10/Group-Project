@@ -61,8 +61,7 @@ It was also discovered that our data were not normally distributed (and verified
 
 For the categorical variable country we saw that 28 of the 32 countries have 20 or less users with 13 of these having only 1 user. As a result we decided to group all countries that had 20 users or less into one new category called “other”. This gave us 5 countries – Italy, France, Germany, Switzerland and Other.
 
-# NEED TO WRITE WHY WE CHOSE EACH OF THESE
-Why we chose to do CA, PCA and LDA
+We will use cluster, linear discriminant, and principal component analysis to answer our question. We have decided to use these techniques as we believe that each will contribute to our investigation of the “perfect charismatic dating profile”. Clustering will alert us to what differentiates unknown groups, whereas LDA and PCA will help us to examine whether we are combining the “right” predictors to find our perfect someone.
 
 # EDA
 
@@ -526,9 +525,10 @@ Our methods of analysis have drawn us to the conclusion that more profile visits
 
 With only one predictor having a substantial amount of influence on our target variable, we did not receive significant results from our classification attempts. 
 
-# NEED TO SORT THIS** I think we need each section's individual conclusions to write this?
+Linear discriminant analysis and principal component analysis did not offer any robust results, but our cluster analysis did provide some insight into our leading question, concluding that a shorter distance and higher number of photos will separate you from the crowd in the dating world.
 
-If we had more and/or different measures available to us, we may be able to deduce what features attract profile visits and, therefore, more kisses. With the data we have access to as of now, we can only conclude that love is unpredictable
+If we had more and/or different measures available to us, we may be able to deduce what features attract profile visits and, therefore, more kisses with a higher level of confidence. With the data we have access to as of now, we can only conclude that love is unpredictable. 
+
 
 
 # References
