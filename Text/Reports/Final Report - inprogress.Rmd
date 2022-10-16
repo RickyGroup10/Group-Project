@@ -30,7 +30,6 @@ require(moments)
 require(ggcorrplot)
 require(fitdistrplus)
 require(reshape2)
-#require(farff)
 require(ggpubr)
 require(dplyr)
 require(caret)
@@ -39,6 +38,7 @@ require(ggord)
 require(HDtest)
 require(MASS)
 require(klaR)
+require(factoextra)
 ```
 
 # Introduction
@@ -49,8 +49,7 @@ Lovoo, is a European dating platform that allows individuals to chat to each oth
 
 This study focuses on seven variables: age, counts_pictures, counts_profileVisits, counts_kisses, distance, country and isVip. Where **Age** is the users age, **counts_pictures** is the number of pictures on the user's profile, **counts_profileVisits** is the number of clicks on this user (to see his/her full profile) from other user accounts, **counts_kisses** is the number of unique user accounts that "liked" (called "kiss" on the platform) this user account, **distance** is the distance between this user's city/location and the location of the user account that was used to fetch the data of this user, **country** is the user's country, **isVip** is a 0 if the user is not a VIP and is 1 if the user is VIP. It was possible to buy a VIP status with real money. This status came with benefits.
 
-# NEED TO ADD WHAT WE WANT TO ACHIEVE
-Based on the data we have available we would like to know the following…..
+Based on the features we have available, we would like to know what combination of these makes a person more charismatic and worthy of ‘love’ (or rather a kiss on their profile). We are hoping this will teach us how many photos we should include in our Lovoo profiles, or if we should move to Switzerland for a better chance at a successful dating outcome.
 
 # Overall Methodology
 
@@ -143,9 +142,9 @@ lovoo$isVip <- as.factor(lovoo$isVip)
 
 Our EDA then looked at bivariate and multivariate analysis in varying combinations of the seven variables. 
 
-We found that there is a strong positive correlation (0.89) between the number of profiles visits and the number of likes that a user receives. There is also a positive correlation (0.42) between the number of pictures a user has and the number of profile visits they receive and a positive correlation (0.37) between the number of pictures a user has and the number of likes they receive. There is a slight positive correlation (0.13) between the age of the user and the distance between this user’s city/location and the location of the user account that was used to fetch the data of the user. There appears to be no correlation between age and likes, profile visits and pictures, nor distance and likes, profile visits and pictures. This can be seen in the heatmap in figure \@ref(fig:heatmap1).
+We found that there is a strong positive correlation (0.89) between the number of profiles visits and the number of likes that a user receives. There is also a positive correlation (0.42) between the number of pictures a user has and the number of profile visits they receive and a positive correlation (0.37) between the number of pictures a user has and the number of likes they receive. There is a slight positive correlation (0.13) between the age of the user and the distance between this user’s city/location and the location of the user account that was used to fetch the data of the user. There appears to be no correlation between age and likes, profile visits and pictures, nor distance and likes, profile visits and pictures. This can be seen in the heatmap in figure \@ref(fig:heatmap).
 
-```{r heatmap1, echo=FALSE}
+```{r heatmap, fig.cap='Correlation heatmap', echo=FALSE}
 cormat <- round(cor(lovoo[,1:5]),2)
 melted_cormat <- melt(cormat)
 ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
@@ -164,6 +163,85 @@ In the univariate analysis we saw that 3901 users are not Vip’s while only 91 
 
 When looking at the number of users by age and country we saw that the number of users by age tends to increase in Germany and peak at 22 years old before decreasing. Whereas in France and Switzerland they tend to start with a larger number of users at a younger age and decrease as age increases.
 
+# Cluster Analysis
+
+To help us answer our question, we’ve used cluster analysis to classify groups of observations that get lots of likes and those that don’t using k-means and to see which numerical variables get the best results.
+
+For this we used the normalised and outlier removed dataset.
+
+From the skree plot, the optimal number of clusters is 2.
+
+We calculated the standardised mean of each numerical variable in each cluster. We find a clear difference in the number of likes between clusters. Observations in cluster 2 on average get more likes than observations in cluster 1. Observations in cluster 2 on average have more visits than observations in cluster 1, but this is obvious as likes and visits are highly correlated. We see that cluster 2 has on average observations with more pictures and from a shorter distance.
+
+# NEED TO 
+**reference code**
+
+
+```{r, echo=FALSE}
+lovoo <- read.csv("../../Data/CSV/lovoo_v3_users_api-results.csv")
+lovoo <- data.frame(lovoo)
+
+lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", 
+                   "counts_kisses", "distance", "country", "isVip")]
+# Replacing the missing values in distance with the mean 207.23
+lovoo$distance[is.na(lovoo$distance)] <- 207.23
+
+lovoo_standard <- as.data.frame(scale(lovoo[2:5]))
+
+
+colnames(lovoo_standard) <- c("standard_pics", "standard_visits", "standard_kisses",
+                              "standard_distance")
+
+#head(lovoo)
+
+z_scores <- as.data.frame(sapply(lovoo_standard[1:4], function(lovoo_standard) (abs(lovoo_standard-mean(lovoo_standard))/sd(lovoo_standard))))
+
+z_scores$isVip <- lovoo$isVip
+z_scores$country <- lovoo$country
+z_scores$age <- lovoo$age
+
+z_scores$isVip <- as.factor(z_scores$isVip)
+z_scores$country <- as.factor(z_scores$country)
+z_scores$age <- as.factor(z_scores$age)
+
+colnames(z_scores) <- c("standard_pics", "standard_visits", "standard_kisses",
+                        "standard_distance", "isVip", "country", 'age')
+
+no_outliers <- z_scores[!rowSums(z_scores[1:4]>3), ]
+
+#no_outliers$you_get_rizz <- with(no_outliers, ifelse(standard_kisses
+#0.4, 1, 0))
+
+#no_outliers$you_get_rizz <- as.factor(no_outliers$you_get_rizz)
+
+#head(no_outliers)
+
+result <- kmeans(no_outliers[1:4],
+                 algorithm="MacQueen",
+                 centers=2, iter.max = 100, nstart = 50)
+#print(result)
+
+
+
+fviz_nbclust(no_outliers[1:4], kmeans, method = "wss")
+
+fviz_cluster(result, data = no_outliers[1:4], 
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw()
+)
+
+final_data <- cbind(no_outliers, cluster = result$cluster)
+#head(final_data)
+```
+
+```{r CATable, results = 'asis', echo=FALSE}
+print(xtable(aggregate(no_outliers[1:4], by=list(cluster=result$cluster), mean)), 
+      caption='Cluster Analysis Output', label='CA', caption.placement="top", type="latex", comment=FALSE)
+
+```
+
+
 # LDA
 
 ## Methodology
@@ -172,22 +250,8 @@ We used linear discriminant analysis on the standardised and outlier removed dat
 
 Looking at the pairs plot again (figure \@ref(fig:LDApairs)) we can see that there is some separation between groups that we can see visually (especially the highly likely class breaking away from the rest in the count of visits) but not much. In the univariate plots we can see that the data is not all normally distributed even after standardisation. Please note that country has been reduced to three levels instead of five for easy visualisation and analysis.
 
-## Results
-
-When conducting the linear discriminant analysis, we used the total five measures. We split into test and train sets randomly with a split of 80/20. From the group means output in table \@ref(LDAmeans), we can see that photo count and visits count have the highest influence on our predetermined groups, this confirms what we discovered about visits being correlated with kisses and therefore our dating chance groups. There is also a difference seen in Switzerland, with that country showing that it has a higher influence on the unlikely dating chance group compared to the other two factors.
-
-The scaling coefficients in table \@ref(LDAcoef) show that the first linear discriminant is largely explained by the feature count of visits (as expected). The proportion of trace (between-class variance) of the first linear discriminant is 94% and the second is 6%. This informs the separability of the training data into the three classes by each linear discriminant.
-
-When applying our analysis results using the predict function, we can plot the predicted score histograms. There was complete overlap in histograms between all groups in LD1 and LD2 meaning that neither of the discriminates could separate each group from each other, which is a bad outcome for our classification goal. Presented in figure \@ref(fig:LDAhist) is the predicted score histogram of LD1. There is a complete overlap of all the groups in the biplot presented in figure \@ref(fig:LDAbiplot). From this we have gone back and tested a reduced number of measures in the analysis to just count of photos, visits, and country. The results were similar so we continued to investigate the full model. Once again, we can see the large affect of visits on the model from the magnitude of the vector showing more discrimination between groups.
-
-## Conclusion
-
-When analysing the predicted vs observed classification table (table \@ref(RCM)) using the test data we set aside earlier we can see that the reported accuracy using LDA as a classification technique is 56% (with the biased optimistic accuracy on the training set matching this score). The classifier over classifies the dating app users as being in the normal chance group, meaning that there might not be any predictors included in the model that can be defined as outstanding dating profile features worthy of more matches.
-
-This poor result maybe be due to the data failing the Box's M-test for Homogeneity of Covariance Matrices with a p-value of $2.2x10^{-16}$ and the classes being imbalanced. From these results, we applied quadratic discriminant analysis as this technique works better for data that fails the Box' M test. We did not see an improvement in classification accuracy with QDA achieving the same score of 56% on the test set. The results can be seen in table \@ref(QDAtab).
-
 ```{r createData, echo=FALSE}
-lovoo <- read.csv("lovoo_v3_users_api-results.csv")
+lovoo <- read.csv("../../Data/CSV/lovoo_v3_users_api-results.csv")
 lovoo <- data.frame(lovoo)
 
 lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", 
@@ -244,6 +308,10 @@ ggpairs(binned, aes(alpha=.5, color=Group)) +
   theme(text=element_text(family="serif"))
 ```
 
+## Results
+
+When conducting the linear discriminant analysis, we used the total five measures. We split into test and train sets randomly with a split of 80/20. From the group means output in table \@ref(LDAmeans), we can see that photo count and visits count have the highest influence on our predetermined groups, this confirms what we discovered about visits being correlated with kisses and therefore our dating chance groups. There is also a difference seen in Switzerland, with that country showing that it has a higher influence on the unlikely dating chance group compared to the other two factors.
+
 ```{r LDAmodelOutput, echo=FALSE}
 set.seed(300521444, kind="Mersenne-Twister")
 
@@ -271,12 +339,16 @@ print(xtable(LDAmeans, caption='Group means of Linear discriminate analysis', la
 #            caption.placement="top", type="latex")
 ```
 
+The scaling coefficients in table \@ref(LDAcoef) show that the first linear discriminant is largely explained by the feature count of visits (as expected). The proportion of trace (between-class variance) of the first linear discriminant is 94% and the second is 6%. This informs the separability of the training data into the three classes by each linear discriminant.
+
 ```{r ldat3, results = 'asis', echo=FALSE}
 LDAcoef<-LDA$scaling
 print(xtable(LDAcoef, caption="Scaling coeficients of Linear discriminate analysis", 
              label="LDAcoef"), comment=FALSE,
             caption.placement="top", type="latex")
 ```
+
+When applying our analysis results using the predict function, we can plot the predicted score histograms. There was complete overlap in histograms between all groups in LD1 and LD2 meaning that neither of the discriminates could separate each group from each other, which is a bad outcome for our classification goal. Presented in figure \@ref(fig:LDAhist) is the predicted score histogram of LD1. There is a complete overlap of all the groups in the biplot presented in figure \@ref(fig:LDAbiplot). From this we have gone back and tested a reduced number of measures in the analysis to just count of photos, visits, and country. The results were similar so we continued to investigate the full model. Once again, we can see the large affect of visits on the model from the magnitude of the vector showing more discrimination between groups.
 
 ```{r LDAhist, echo=FALSE, fig.cap="Predicted score histograms for LD1"}
 Pred <- predict(LDA)
@@ -287,6 +359,10 @@ ldahist(data=Pred$x[,1], g=Train$Group)
 ggord(LDA, Train$Group)
 ```
 
+## Conclusion
+
+When analysing the predicted vs observed classification table (table \@ref(RCM)) using the test data we set aside earlier we can see that the reported accuracy using LDA as a classification technique is 56% (with the biased optimistic accuracy on the training set matching this score). The classifier over classifies the dating app users as being in the normal chance group, meaning that there might not be any predictors included in the model that can be defined as outstanding dating profile features worthy of more matches.
+
 ```{r ldat1, results = 'asis', echo=FALSE}
 RealisticPredicted <- predict(LDA, Test)$class
 RCM <- table(RealisticPredicted, Actual=Test$Group)
@@ -295,6 +371,8 @@ print(xtable(RCM, caption="Realistic predicted LDA classification",
              label="RCM"), comment=FALSE,
             caption.placement="top", type="latex")
 ```
+
+This poor result maybe be due to the data failing the Box's M-test for Homogeneity of Covariance Matrices with a p-value of $2.2x10^{-16}$ and the classes being imbalanced. From these results, we applied quadratic discriminant analysis as this technique works better for data that fails the Box' M test. We did not see an improvement in classification accuracy with QDA achieving the same score of 56% on the test set. The results can be seen in table \@ref(QDAtab).
 
 ```{r ldat2, results = 'asis', echo=FALSE}
 qda <- qda(Group~., data = Train)
@@ -306,6 +384,17 @@ print(xtable(QDAtab, caption="Realistic predicted QDA classification",
              label="QDAtab"), comment=FALSE,
             caption.placement="top", type="latex")
 ```
+
+# Conclusion
+
+Our methods of analysis have drawn us to the conclusion that more profile visits inherently mean more kisses (which is our measure of dating success). The number of photos on our subject’s profile, their country of origin, age, their distance away from potential matches, and whether they pay for a VIP subscription does not influence a successful dating outcome. 
+
+With only one predictor having a substantial amount of influence on our target variable, we did not receive significant results from our classification attempts. 
+
+# NEED TO SORT THIS** I think we need each section's individual conclusions to write this?
+
+If we had more and/or different measures available to us, we may be able to deduce what features attract profile visits and, therefore, more kisses. With the data we have access to as of now, we can only conclude that love is unpredictable
+
 
 # References
 
