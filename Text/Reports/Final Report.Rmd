@@ -191,9 +191,12 @@ When looking at the number of users by age and country we saw that the number of
 
 # Cluster Analysis
 
-To help us answer our question, we’ve used cluster analysis to classify groups of observations that get lots of likes and those that don’t using k-means and to see which numerical variables get the best results. For this we used the normalised and outlier removed dataset.
+## Methodology
+We wanted to see which numerical variables contribute to getting more matches on the dating site Lovoo. To help us answer our leading question, we’ve used cluster analysis to classify groups of observations that get lots of likes and those that don’t using k-means to see which numerical variables get the best results. For this we used the normalised and outlier removed dataset. This is necessary because k-means is very sensitive to outliers. We used Euclidean distance as our distance measure for our algorithm. We used an elbow plot to identify the optimal number of clusters to be created using the “elbow” method and from there we used the “fviz_cluster” function in R to visualise the clusters.
 
-From the skree plot (figure \@ref(fig:skreeplot)) we can see that the optimal number of clusters is 2. 
+
+## Results
+From the elbow plot (figure \@ref(fig:skreeplot)), the optimal number of clusters is 2 as it appears to be bending there. Using this result, we can perform the analysis and extract the results with 2 clusters. From the visualisation (figure \@ref(fig:caplot)), we see that there are two distinct clusters with a slight overlap. We calculated the standardised mean of each numerical variable in each cluster to quantitatively see the means of each variable per cluster to see if there is any difference (table \@ref(catab)). We find a clear difference in the number of likes between clusters. Observations in cluster 2 on average get more likes than observations in cluster 1. Observations in cluster 2 on average have more visits than observations in cluster 1, but this is obvious as likes and visits are highly correlated. We see that cluster 2 has on average observations with more pictures and from a shorter distance.
 
 ```{r, echo=FALSE}
 lovoo <- read.csv("../../Data/CSV/lovoo_v3_users_api-results.csv")
@@ -246,8 +249,6 @@ result <- kmeans(no_outliers[1:4],
 fviz_nbclust(no_outliers[1:4], kmeans, method = "wss")
 ```
 
-The Cluster plot (figure \@ref(fig:caplot)) shows the split of the clusters.
-
 ```{r caplot, fig.cap="Cluster plot", echo=FALSE}
 fviz_cluster(result, data = no_outliers[1:4], 
              geom = "point",
@@ -258,8 +259,6 @@ fviz_cluster(result, data = no_outliers[1:4],
 final_data <- cbind(no_outliers, cluster = result$cluster)
 #head(final_data)
 ```
-
-We calculated the standardised mean of each numerical variable in each cluster. We find a clear difference in the number of likes between clusters. Observations in cluster 2 on average get more likes than observations in cluster 1. Observations in cluster 2 on average have more visits than observations in cluster 1, but this is obvious as likes and visits are highly correlated. We see that cluster 2 has on average observations with more pictures and from a shorter distance. This can be seen in table \@ref(catab)
 
 ```{r catab, results = 'asis', echo=FALSE, message=FALSE, warning=FALSE}
 caresult <- data.frame(aggregate(no_outliers[1:4], by=list(cluster=result$cluster), mean))
