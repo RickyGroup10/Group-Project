@@ -2,13 +2,18 @@
 title: "A look at dating app user profile statistics"
 author: "Lissa Harrop, Katrina Watkins, Ricky Loo and Max Tan"
 date: "October 2022"
-classoption: 12pt
+classoption: 
+  - 12pt
   
 header-includes:
   - \usepackage{newpxtext,eulerpx}
   - \usepackage{bm,bbm}
   - \usepackage{float}
   - \floatplacement{figure}{H}
+  - \usepackage{titling}
+  - \pretitle{\begin{center}
+    \includegraphics[width=2in]{"../../Images/PNG/Hearts_final.png"}\LARGE\\}
+  - \posttitle{\end{center}}
 
 output: bookdown::pdf_document2
 
@@ -63,7 +68,7 @@ For the categorical variable country we saw that 28 of the 32 countries have 20 
 
 We will use cluster, linear discriminant, and principal component analysis to answer our question. We have decided to use these techniques as we believe that each will contribute to our investigation of the “perfect charismatic dating profile”. Clustering will alert us to what differentiates unknown groups, whereas LDA and PCA will help us to examine whether we are combining the “right” predictors to find our perfect someone.
 
-# EDA
+# Exploratory data anaylsis
 
 ## Results
 
@@ -83,7 +88,7 @@ The users are from 32 different countries ranging from 1 user to 1657 users with
 
 Of the 3992 users 91 of them have purchased VIP leaving 3901 users that have not purchased VIP.
 
-From these results we can see that our data are not normally distributed, heavily skewed and had several outliers that were influencing our results.
+From these results we can see that our data are not normally distributed, heavily skewed and had several outliers that were influencing our results. You can see an example of the original dataset for the density relating to the number of profile pictures users have in figure \@ref(fig:picturesplot).
 
 ```{r, echo=FALSE}
 # Reading in the data
@@ -139,7 +144,27 @@ lovoo$isVip <- as.factor(lovoo$isVip)
 ```
 
 
-# <<Example plot>>
+```{r picturesplot, fig.cap="Profile pictures", echo=FALSE}
+picsplot <- ggplot(lovoo, aes(x=counts_pictures)) +
+  geom_histogram(aes(y=..density..),
+                 bins=nclass.FD(unlist(lovoo$counts_pictures)),
+                 col='black', fill='white') +
+  labs(x = 'Number of Profile Pictures',
+       y = 'Histogram, smoothed histogram, and estimated normal density')+
+  ggtitle("Visualisation of the number of profile pictures a user has") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_density(col='blue', size=1.5) +
+  geom_boxplot(aes(y=-0.02), width = .01, notch=TRUE, col='blue') +
+  stat_function(fun = dnorm, args = list(mean = mean(lovoo$counts_pictures), 
+                                         sd = sd(lovoo$counts_pictures)), 
+                col='darkgreen', size=1.5) +
+  geom_vline(xintercept = mean(lovoo$counts_pictures), col="red", size=1) +
+  theme_tufte()
+
+picsplot + theme(text=element_text(size=12, 
+        family="serif")) +
+  theme(plot.title=element_text(hjust=0.5))
+```
 
 Our EDA then looked at bivariate and multivariate analysis in varying combinations of the seven variables. 
 
@@ -166,17 +191,9 @@ When looking at the number of users by age and country we saw that the number of
 
 # Cluster Analysis
 
-To help us answer our question, we’ve used cluster analysis to classify groups of observations that get lots of likes and those that don’t using k-means and to see which numerical variables get the best results.
+To help us answer our question, we’ve used cluster analysis to classify groups of observations that get lots of likes and those that don’t using k-means and to see which numerical variables get the best results. For this we used the normalised and outlier removed dataset.
 
-For this we used the normalised and outlier removed dataset.
-
-From the skree plot, the optimal number of clusters is 2.
-
-We calculated the standardised mean of each numerical variable in each cluster. We find a clear difference in the number of likes between clusters. Observations in cluster 2 on average get more likes than observations in cluster 1. Observations in cluster 2 on average have more visits than observations in cluster 1, but this is obvious as likes and visits are highly correlated. We see that cluster 2 has on average observations with more pictures and from a shorter distance.
-
-# NEED TO 
-**reference code**
-
+From the skree plot (figure \@ref(fig:skreeplot)) we can see that the optimal number of clusters is 2. 
 
 ```{r, echo=FALSE}
 lovoo <- read.csv("../../Data/CSV/lovoo_v3_users_api-results.csv")
@@ -222,10 +239,16 @@ result <- kmeans(no_outliers[1:4],
                  centers=2, iter.max = 100, nstart = 50)
 #print(result)
 
+```
 
+```{r skreeplot, fig.cap="Skree Plot", echo=FALSE}
 
 fviz_nbclust(no_outliers[1:4], kmeans, method = "wss")
+```
 
+The Cluster plot (figure \@ref(fig:caplot)) shows the split of the clusters.
+
+```{r caplot, fig.cap="Cluster plot", echo=FALSE}
 fviz_cluster(result, data = no_outliers[1:4], 
              geom = "point",
              ellipse.type = "convex", 
@@ -236,14 +259,16 @@ final_data <- cbind(no_outliers, cluster = result$cluster)
 #head(final_data)
 ```
 
-```{r CATable, results = 'asis', echo=FALSE}
-print(xtable(aggregate(no_outliers[1:4], by=list(cluster=result$cluster), mean)), 
-      caption='Cluster Analysis Output', label='CA', caption.placement="top", type="latex", comment=FALSE)
+We calculated the standardised mean of each numerical variable in each cluster. We find a clear difference in the number of likes between clusters. Observations in cluster 2 on average get more likes than observations in cluster 1. Observations in cluster 2 on average have more visits than observations in cluster 1, but this is obvious as likes and visits are highly correlated. We see that cluster 2 has on average observations with more pictures and from a shorter distance. This can be seen in table \@ref(catab)
+
+```{r catab, results = 'asis', echo=FALSE, message=FALSE, warning=FALSE}
+caresult <- data.frame(aggregate(no_outliers[1:4], by=list(cluster=result$cluster), mean))
+print(xtable(caresult, caption='Cluster Analysis Output', label='catab', 
+             caption.placement="top", type="latex", comment=FALSE))
 
 ```
 
-
-# LDA
+# Linear discriminant analysis
 
 ## Methodology
 
@@ -391,7 +416,7 @@ print(xtable(QDAtab, caption="Realistic predicted QDA classification",
 ## Method
 Much like in the linear discriminant analysis, we are going to try and predict dating chance groups. We have used the four numeric measures, count of visits, count of photos, distance and age and are going to use the same train/test split. 
   
-As we can see in table \@ref(pcasum), two principal components only explain 56% of the variance and three explains 78%. This is visualised in figure \@ref(pcvarplot). We will need to use three principal components for predictions as this explains the majority. 
+As we can see in table \@ref(pcasum), two principal components only explain 56% of the variance and three explains 78%. This is visualised in figure \@ref(fig:pcvarplot). We will need to use three principal components for predictions as this explains the majority. 
   
 We have plotted the pairs graph of the components in figure \@ref(fig:PCApairs). As seen in this plot, all correlation coefficients are equal to zero, all components are very normally distributed in the univariate plots, and there seems to be some funnelling in the bivariate plots. 
   
@@ -471,9 +496,11 @@ print(xtable(pcasum, caption="Summary of the principal component analysis",
             caption.placement="top", type="latex")
 
 ```
+
 ```{r pcvarplot, echo=FALSE, fig.cap="The variance explained per principal component"}
 plot(pc, type="l")
 ```
+
 ```{r PCApairs, echo=FALSE, fig.cap="Pairs plot of all principal components"}
 pairs.panels(pc$x,
              gap=0,
@@ -489,7 +516,6 @@ When applying this analysis to a classification problem we see worse results tha
   
 Table \@ref(tab1) shows the predicted verses actual results of applying the model to the test data. Again, we can see that the classifier over represents the normal chance group and most likely has to do with the class imbalance. The Accuracy of this technique is only 24%. 
   
-
 ```{r bipca, echo=FALSE, fig.cap="Biplot of the first two principal components"}
 ggord(pc, Train$Group)
 ```
@@ -529,7 +555,14 @@ Linear discriminant analysis and principal component analysis did not offer any 
 
 If we had more and/or different measures available to us, we may be able to deduce what features attract profile visits and, therefore, more kisses with a higher level of confidence. With the data we have access to as of now, we can only conclude that love is unpredictable. 
 
+# Contact details
 
+| Co-Authors      | Contact details      |
+| --------------- | ------------- |
+| \newline ![]("../../Images/JPG/lissa-harrop.jpg"){height=120px} \newline | \newline Lissa Harrop \newline harropliss@myvuw.ac.nz \newline \href{https://orcid.org/0000-0002-6761-7465}{\color{blue}ORCID: 0000-0002-6761-7465} |
+| \newline ![]("../../Images/JPG/Ricky.jpg"){height=120px} | \newline Ricky Loo \newline loorick@myvuw.ac.nz \newline \href{https://orcid.org/0000-0002-4265-1085}{\color{blue}ORCID: 0000-0002-4265-1085} | 
+| \newline ![]("../../Images/JPG/Max_image.jpg"){height=120px} | \newline Max Tan \newline tanmacs@myvuw.ac.nz \newline \href{https://orcid.org/0000-0001-9215-4311}{\color{blue}ORCID: 0000-0001-9215-4311} | 
+| \newline ![]("../../Images/PNG/katrina_image2.png"){height=120px} | \newline Katrina Watkins\newline watkinkatr@myvuw.ac.nz \newline \href{https://orcid.org/0000-0001-6614-2819}{\color{blue}ORCID: 0000-0001-6614-2819} | 
 
 # References
 
