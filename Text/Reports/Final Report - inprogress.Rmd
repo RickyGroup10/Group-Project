@@ -39,6 +39,8 @@ require(HDtest)
 require(MASS)
 require(klaR)
 require(factoextra)
+require(psych)
+require(nnet)
 ```
 
 # Introduction
@@ -359,7 +361,7 @@ ldahist(data=Pred$x[,1], g=Train$Group)
 ggord(LDA, Train$Group)
 ```
 
-## Conclusion
+## Linear discriminant analysis Conclusion
 
 When analysing the predicted vs observed classification table (table \@ref(RCM)) using the test data we set aside earlier we can see that the reported accuracy using LDA as a classification technique is 56% (with the biased optimistic accuracy on the training set matching this score). The classifier over classifies the dating app users as being in the normal chance group, meaning that there might not be any predictors included in the model that can be defined as outstanding dating profile features worthy of more matches.
 
@@ -384,6 +386,139 @@ print(xtable(QDAtab, caption="Realistic predicted QDA classification",
              label="QDAtab"), comment=FALSE,
             caption.placement="top", type="latex")
 ```
+  
+# Principal component analysis 
+ 
+## Method
+Much like in the linear discriminant analysis, we are going to try and predict dating chance groups. We have used the four numeric measures, count of visits, count of photos, distance and age and are going to use the same train/test split. 
+  
+As we can see in table \@ref(pcasum), two principal components only explain 56% of the variance and three explains 78%. This is visualised in figure \@ref(pcvarplot). We will need to use three principal components for predictions as this explains the majority. 
+  
+We have plotted the pairs graph of the components in figure \@ref(fig:PCApairs). As seen in this plot, all correlation coefficients are equal to zero, all components are very normally distributed in the univariate plots, and there seems to be some funnelling in the bivariate plots. 
+  
+```{r echo=FALSE}
+lovoo <- read.csv("../../Data/CSV/lovoo_v3_users_api-results.csv")
+lovoo <- data.frame(lovoo)
+
+lovoo <- lovoo[, c("age", "counts_pictures", "counts_profileVisits", 
+                   "counts_kisses", "distance", "country", "isVip")]
+# Replacing the missing values in distance with the mean 207.23
+lovoo$distance[is.na(lovoo$distance)] <- 207.23
+
+lovoo_standard <- as.data.frame(scale(lovoo[2:5]))
+
+
+colnames(lovoo_standard) <- c("standard_pics", "standard_visits", "standard_kisses",
+                              "standard_distance")
+
+z_scores <- as.data.frame(sapply(lovoo_standard[1:4], function(lovoo_standard) (abs(lovoo_standard-mean(lovoo_standard))/sd(lovoo_standard))))
+
+z_scores$isVip <- lovoo$isVip
+z_scores$country <- lovoo$country
+z_scores$age <- lovoo$age
+
+colnames(z_scores) <- c("standard_pics", "standard_visits", "standard_kisses",
+                              "standard_distance", "isVip", "country", 'age')
+
+no_outliers <- z_scores[!rowSums(z_scores[1:4]>3), ]
+
+no_outliers["country"][no_outliers["country"] == 'CH'] <- 'Switzerland'
+no_outliers["country"][no_outliers["country"] == 'DE'] <- 'Germany'
+
+# Replacing variable names
+no_outliers <- transform(no_outliers, 
+                    country = {x <- as.character(country)
+                          x[!x %in% c("Switzerland","Germany")] <- "other"
+                          factor(x)})
+
+no_outliers$country <- as.factor(no_outliers$country)
+no_outliers$isVip <- as.factor(no_outliers$isVip)
+
+q1<-quantile(no_outliers$standard_kisses, probs = c(0.25))
+q3<-quantile(no_outliers$standard_kisses, probs = c(0.75))
+
+binned <- no_outliers %>% mutate(Group =
+                                   case_when(standard_kisses <= q1 ~ "Unlikely", 
+                                             standard_kisses < q3 ~ "Normal",
+                                             standard_kisses >= q3 ~ "Highly_likely")
+)
+
+binned$Group<-as.factor(binned$Group)
+
+binned = subset(binned, select = -c(standard_kisses, country, isVip))
+```
+
+```{r echo=FALSE}
+set.seed(300521444, kind="Mersenne-Twister")
+
+ind <- sample(c("Tr", "Te"),
+nrow(no_outliers),
+replace=TRUE,
+prob=c(.8, .2))
+
+# Explicitly split the data in "Train" and "Test"
+Train <- binned[ind=="Tr",]
+Test <- binned[ind=="Te",]
+```
+
+```{r pcat1, results = 'asis', echo=FALSE}
+pc <- prcomp(Train[,-5],
+             center = TRUE,
+            scale. = TRUE)
+pcasum<-summary(pc)
+
+print(xtable(pcasum, caption="Summary of the principal component analysis", 
+             label="pcasum"), comment=FALSE,
+            caption.placement="top", type="latex")
+
+```
+```{r pcvarplot, echo=FALSE, fig.cap="The variance explained per principal component"}
+plot(pc, type="l")
+```
+```{r PCApairs, echo=FALSE, fig.cap="Pairs plot of all principal components"}
+pairs.panels(pc$x,
+             gap=0,
+             bg = c("red", "yellow", "blue")[Train$Group],
+             pch=21)
+```
+  
+## Result
+  
+The biplot of the first two principal components (figure \@ref(fig:bipca)) shows that 56% explained variance does not differentiate between the chance groups as there is complete overlap. The feature arrows indicate that each variable does not provide much discrimination. 
+  
+When applying this analysis to a classification problem we see worse results than the LDA classification attempt. The model we have created includes a multinomial logistic regression of the first three principal components with the unlikely chance group as the reference level. We have used this model as we are predicting more than two unordered categorical groups as our target. The residual deviance of the model is *5575.5*.
+  
+Table \@ref(tab1) shows the predicted verses actual results of applying the model to the test data. Again, we can see that the classifier over represents the normal chance group and most likely has to do with the class imbalance. The Accuracy of this technique is only 24%. 
+  
+
+```{r bipca, echo=FALSE, fig.cap="Biplot of the first two principal components"}
+ggord(pc, Train$Group)
+```
+
+```{r echo=FALSE, include=FALSE}
+set.seed(300521444, kind="Mersenne-Twister")
+trg <- predict(pc, Train)
+trg <- data.frame(trg, Train[5])
+tst <- predict(pc, Test)
+tst <- data.frame(tst, Test[5])
+trg$Group <- relevel(trg$Group, ref = "Unlikely")
+mymodel <- nnet::multinom(Group~PC1+PC2+PC3, data = trg)
+#summary(mymodel)
+```
+```{r pcat2, results = 'asis', echo=FALSE}
+p1 <- predict(mymodel, tst)
+tab1 <- table(p1, tst$Group)
+
+print(xtable(tab1, caption="Predicted vs Actual PCA classification", 
+             label="tab1"), comment=FALSE,
+            caption.placement="top", type="latex")
+
+```
+  
+## Principal component analysis Conclusion
+  
+We might have achieved this bad result with PCA as it removes variability without knowledge of the features that are most useful in classification as it reduces dimensionality. It was still worthwhile trying this technique as it adds evidence to our final conclusion.
+
 
 # Conclusion
 
