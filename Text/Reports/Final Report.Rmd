@@ -263,9 +263,8 @@ We calculated the standardised mean of each numerical variable in each cluster. 
 
 ```{r catab, results = 'asis', echo=FALSE, message=FALSE, warning=FALSE}
 caresult <- data.frame(aggregate(no_outliers[1:4], by=list(cluster=result$cluster), mean))
-print(xtable(caresult, caption='Cluster Analysis Output', label='catab', 
-             caption.placement="top", type="latex", comment=FALSE))
-
+print(xtable(caresult, caption='Cluster Analysis Output', label='catab'), 
+             caption.placement="top", type="latex", comment=FALSE)
 ```
 
 # Linear discriminant analysis
